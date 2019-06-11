@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 Route::group(['middleware' => 'auth:api'], function(){
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
     Route::post('/message/send', 'MessageController@create');
+    Route::post('/group/create', 'GroupController@create');
     
 });
 

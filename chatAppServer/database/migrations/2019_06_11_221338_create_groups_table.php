@@ -16,8 +16,12 @@ class CreateGroupsTable extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->boolean('is_channel')->default(0)->change();;   
+            $table->boolean('is_channel')->default(0);   
             $table->timestamps();
+
+            $table->integer('creator_id')->unsigned()->index();
+            $table->foreign('creator_id')->references('id')->on('users');
+        
         });
     }
 
