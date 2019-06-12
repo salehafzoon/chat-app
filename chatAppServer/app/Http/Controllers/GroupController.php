@@ -16,6 +16,10 @@ class GroupController extends Controller
         $group->is_channel = $request->is_channel;
 
         $group->save();
+        
+        $group->members()->sync([
+            $request->creator_id
+        ]);
 
         return response()->json([
             'status' => 'success',
@@ -41,5 +45,25 @@ class GroupController extends Controller
         return response()->json([
             'groups' => $results
         ],200);
+    }
+    public function members(Request $request){
+        $group = Group::find($request->group_id);
+        
+        return response()->json([
+            'members' => $group ->members
+        ],200);
+    }
+    public function addMember(Request $request){
+        $group = Group::find($request->group_id);
+
+        //sync() function to prevent duplicated relations
+        $group->members()->sync([
+            $request->user_id
+        ]);
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'member added'
+        ],200);      
     }
 }
