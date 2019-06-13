@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Group;
+use App\User;
 use DB;
 
 class GroupController extends Controller
@@ -16,7 +17,6 @@ class GroupController extends Controller
         $group->is_channel = $request->is_channel;
 
         $group->save();
-        
         $group->members()->sync([
             $request->creator_id
         ]);
@@ -56,10 +56,13 @@ class GroupController extends Controller
     public function addMember(Request $request){
         $group = Group::find($request->group_id);
 
+        $user = User::find($request->user_id);
+        $group->members()->save($user);
+        
         //sync() function to prevent duplicated relations
-        $group->members()->sync([
-            $request->user_id
-        ]);
+        // $group->members()->sync([
+        //     $request->user_id
+        // ]);
         
         return response()->json([
             'status' => 'success',
