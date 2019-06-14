@@ -11,29 +11,14 @@ class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'fname','lname','phone', 'email', 'password',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password', 'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
@@ -55,16 +40,10 @@ class User extends Authenticatable implements JWTSubject
     }
 
     public function messages(){
-        return $this->hasMany(Message::class);
+        return $this->belongsToMany(Message::class);
     }
 
     public function groups(){
         return $this->belongsToMany(Group::class);
     }
-    public function readGroup(){
-        
-    }
-    // public function sendMessages(){
-        
-    // }
 }

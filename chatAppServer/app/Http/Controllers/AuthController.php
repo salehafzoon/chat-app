@@ -7,8 +7,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
-    {
+    public function register(Request $request){
         $user = User::create([
             'fname' => $request->fname,
             'lname' => $request->lname,
@@ -21,9 +20,7 @@ class AuthController extends Controller
 
         return $this->respondWithToken($token);
     }
-
-    public function login()
-    {
+    public function login(){
         $credentials = request(['email', 'password']);
 
         if (! $token = auth()->attempt($credentials)) {
@@ -32,9 +29,7 @@ class AuthController extends Controller
 
         return $this->respondWithToken($token);
     }
-
-    public function logout()
-    {
+    public function logout(){
 
         auth()->logout();
 
@@ -43,9 +38,7 @@ class AuthController extends Controller
             'message' => 'logout'
         ], 200);
     }
-
-    protected function respondWithToken($token)
-    {
+    protected function respondWithToken($token){
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',

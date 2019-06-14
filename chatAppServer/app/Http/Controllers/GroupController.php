@@ -9,8 +9,7 @@ use DB;
 
 class GroupController extends Controller
 {
-    public function create(Request $request)
-    {
+    public function create(Request $request){
         $group = new Group;
         $group->name = $request->name;
         $group->creator_id = $request->creator_id;
@@ -26,8 +25,7 @@ class GroupController extends Controller
             'message' => 'group created'
         ], 200);
     }
-    public function delete(Request $request)
-    {
+    public function delete(Request $request){
         $group = Group::find($request->group_id);
         $group->delete();
 
@@ -36,8 +34,7 @@ class GroupController extends Controller
             'message' => 'group deleted',
         ], 200);
     }
-    public function search(Request $request)
-    {
+    public function search(Request $request){
         $results = DB::table('groups')
             ->where('name', 'LIKE', '%' . $request->name . '%')
             ->get();
@@ -59,14 +56,17 @@ class GroupController extends Controller
         $user = User::find($request->user_id);
         $group->members()->save($user);
         
-        //sync() function to prevent duplicated relations
-        // $group->members()->sync([
-        //     $request->user_id
-        // ]);
-        
         return response()->json([
             'status' => 'success',
             'message' => 'member added'
         ],200);      
+    }
+    public function userGroups(Request $request){
+        
+        $user = User::find($request->user_id);
+        
+        return response()->json([
+            'user_groups' => $user ->groups
+        ],200);
     }
 }

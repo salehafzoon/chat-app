@@ -26,15 +26,21 @@ class CreateMessagesTable extends Migration
             $table->foreign('rec_id')->references('id')->on('users');
         
         });
+
+        Schema::create('message_user', function (Blueprint $table) {
+            $table->increments('id');
+        
+            $table->integer('user_id')->unsigned()->index();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        
+            $table->integer('message_id')->unsigned()->index();
+            $table->foreign('message_id')->references('id')->on('messages')->onDelete('cascade');
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
+        Schema::dropIfExists('message_user');
         Schema::dropIfExists('messages');
     }
 }
