@@ -8,8 +8,8 @@ use Illuminate\Http\Request;
 // });
 
 
-Route::group(['middleware' => 'auth:api'], function(){
-    
+Route::group(['middleware' => ['jwt.verify']], function() {
+
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
     
     Route::post('/message/send', 'MessageController@create');
@@ -20,6 +20,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::get('/group/search', 'GroupController@search');
     Route::get('/group/members', 'GroupController@members');
     Route::post('/group/addMember', 'GroupController@addMember');
+    Route::post('/group/deleteMember', 'GroupController@deleteMember');
     Route::get('/group/userGroups', 'GroupController@userGroups');
     
 });
