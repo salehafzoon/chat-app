@@ -25,13 +25,18 @@ class CreateUsersTable extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+
+        // Schema::create('block_user', function (Blueprint $table) {
+        //     $table->increments('id');
+        
+        //     $table->integer('user_id')->unsigned()->index();
+        //     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        
+        //     $table->integer('block_id')->unsigned()->index();
+        //     $table->foreign('block_id')->references('id')->on('users')->onDelete('cascade');
+        // });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('users');
