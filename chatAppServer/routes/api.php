@@ -3,17 +3,13 @@
 use Illuminate\Http\Request;
 
 
-// Route::middleware('auth:api')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
-
-
 Route::group(['middleware' => ['jwt.verify']], function() {
 
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
     
-    Route::post('/user/search', 'UserController@searchUser');
-    Route::post('/user/block', 'UserController@blockUser');
+    Route::get('/user/search', 'UserController@searchUser');
+    Route::post('/user/block_or_unblock', 'UserController@blockOrUnblockUser');
+    Route::get('/user/block_list', 'UserController@blockList');
     
     Route::post('/message/send', 'MessageController@create');
     Route::get('/message/userMessages', 'MessageController@userMessages');
@@ -31,6 +27,4 @@ Route::group(['middleware' => ['jwt.verify']], function() {
 Route::post('/register', 'AuthController@register');
 
 Route::post('/login', 'AuthController@login');
-
-// Route::post('/logout', 'AuthController@logout');
 
