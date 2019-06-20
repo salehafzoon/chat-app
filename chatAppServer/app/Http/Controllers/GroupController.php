@@ -110,6 +110,5 @@ class GroupController extends Controller
         return response()->json([
             'user_groups' => $user ->groups
         ],200);
-    
     }
 }
