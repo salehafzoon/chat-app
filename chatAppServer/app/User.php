@@ -12,11 +12,14 @@ class User extends Authenticatable implements JWTSubject
     use Notifiable;
 
     protected $fillable = [
-        'fname','lname','phone', 'email', 'password',
+        'name','phone', 'email', 'password',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token','created_at',
+        'updated_at',
+        'pivot',
+        'email_verified_at',  
     ];
 
     protected $casts = [
@@ -35,15 +38,20 @@ class User extends Authenticatable implements JWTSubject
             $this->attributes['password'] = bcrypt($password);
         }
     }
-    public function messages(){
-        return $this->belongsToMany(Message::class);
-    }
-    public function groups(){
-        return $this->belongsToMany(Group::class);
-    }
-    public function blockUsers(){
+    // public function messages(){
+    //     return $this->belongsToMany(Message::class);
+    // }
+    // public function groups(){
+    //     return $this->belongsToMany(Group::class);
+    // }
+    // public function blockUsers(){
 
-        return $this->belongsToMany(User::class, 'block_user', 'user_id', 'block_id');
+    //     return $this->belongsToMany(User::class, 'block_user', 'user_id', 'block_id');
+    // }
+
+    public function chats(){
+
+        return $this->belongsToMany(Chat::class, 'chat_user', 'user_id','chat_id');
     }
 
 }

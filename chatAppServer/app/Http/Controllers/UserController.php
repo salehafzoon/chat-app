@@ -12,10 +12,9 @@ class UserController extends Controller
 
     public function searchUser(Request $request){
         $results = DB::table('users')
-            ->where('fname', 'LIKE', '%' . $request->name . '%')
-            ->orWhere('lname','LIKE','%' . $request->name . '%')
+            ->where('name', 'LIKE', '%' . $request->name . '%')
             ->get();
-    
+        
         return response()->json([
             'users' => $results
         ],200);
@@ -65,4 +64,14 @@ class UserController extends Controller
             'blocked users'=>$user->blockUsers
         ]);
     }
+    public function userChats(Request $request){
+
+        $user = User::find(Auth::user()->id);
+        
+        return response()
+        ->json(['chats' => $user->chats
+        ],200);
+
+    }
+
 }

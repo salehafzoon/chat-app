@@ -8,23 +8,25 @@ Route::group(['middleware' => ['jwt.verify']], function() {
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
     
     Route::get('/user/search', 'UserController@searchUser');
-    Route::post('/user/block_or_unblock', 'UserController@blockOrUnblockUser');
-    Route::get('/user/block_list', 'UserController@blockList');
+    Route::get('/user/chat', 'UserController@userChats');
+
+    // Route::post('/user/block_or_unblock', 'UserController@blockOrUnblockUser');
+    // Route::get('/user/block_list', 'UserController@blockList');
+
+    Route::post('/chat/create', 'ChatController@create');
+    Route::post('/chat/delete', 'ChatController@delete');
+    Route::get('/chat/info', 'ChatController@info');
     
-    Route::post('/message/send', 'MessageController@create');
-    Route::get('/message/userMessages', 'MessageController@userMessages');
+    Route::post('/chat/member/add', 'ChatController@addMember');
+    Route::post('/chat/member/delete', 'ChatController@deleteMember');
+    Route::get('/chat/member', 'ChatController@members');
     
-    Route::post('/group/create', 'GroupController@create');
-    Route::post('/group/delete', 'GroupController@delete');
-    Route::get('/group/search', 'GroupController@search');
-    Route::get('/group/members', 'GroupController@members');
-    Route::post('/group/addMember', 'GroupController@addMember');
-    Route::post('/group/deleteMember', 'GroupController@deleteMember');
-    Route::get('/group/userGroups', 'GroupController@userGroups');
-    
+    Route::get('/chat/message', 'MessageController@chatMessages');
+    Route::post('/chat/message/send', 'MessageController@send');
+
 });
 
-Route::post('/register', 'AuthController@register');
+Route::post('auth/register', 'AuthController@register');
 
-Route::post('/login', 'AuthController@login');
+Route::post('auth/login', 'AuthController@login');
 
