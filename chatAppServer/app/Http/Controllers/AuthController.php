@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use Auth;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     public function register(Request $request){
         $user = User::create([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'email'    => $request->email,
-            'password' => $request->password,
+            'name' => $request->input('name'),
+            'phone' => $request->input('phone'),
+            'email'    => $request->input('email'),
+            'password' => $request->input('password'),
          ]);
 
         $token = auth()->login($user);
@@ -42,6 +43,13 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type'   => 'bearer',
             'expires_in'   => auth()->factory()->getTTL() * 60
+        ]);
+    }
+    public function currentUser(Request $request){
+        
+        $user = User::find(auth()->user()->id);
+        return response()->json([
+            'user'   => $user,
         ]);
     }
 }
