@@ -1,0 +1,28 @@
+.container{
+    padding: 3%;
+    margin: auto;
+    width: 100%;
+}
+.content{
+    margin: auto;
+    
+    width: 100%;
+}
+.aside{
+    widows: 400px;;
+}
+.app-title{
+    color: whitesmoke;
+    text-align: center
+}
+.profile-pannel{
+    
+    background-color: aliceblue;
+    padding: 0%;
+    margin: 0%;
+}
+.command-menu{
+    background-color: aliceblue;
+    padding: 0%;
+    margin: 0%;
+}
