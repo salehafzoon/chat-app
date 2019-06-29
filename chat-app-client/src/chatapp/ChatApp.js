@@ -1,7 +1,10 @@
 import React, { Component } from 'react'
 import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
-import { getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts } from '../util/APIUtils'
+import {
+    getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
+    , createChatApi,
+} from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
@@ -29,8 +32,9 @@ export default class ChatApp extends Component {
             searchPhone: '',
             searchedUser: '',
             userFounded: false,
-            conctacts: [],
-            conctactNames: [],
+            contacts: [],
+            contactNames: [],
+            others:[]
         }
 
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
@@ -64,7 +68,7 @@ export default class ChatApp extends Component {
             isAuthenticated: false
         });
 
-        this.props.history.push(redirectTo);
+        this.props.history.replace(redirectTo);
 
         notification[notificationType]({
             message: 'Chat App',
@@ -125,11 +129,38 @@ export default class ChatApp extends Component {
         this.loadCurrentUser();
         this.loadChats();
     }
-    handleNewChatOk = () => {
-        this.setState({
-            newChatModalVisib: false,
+    handleNewChatOk = ()=>{
+
+        let createChatRequest = {
+            'name': this.state.newChatName,
+            'others': this.state.others,
+            'isPrivate': false,
+            'isChannel': this.state.isChannel
+        }
+        console.log('creatChatReq',createChatRequest);
+
+        createChatApi(createChatRequest)
+        .then(response => {
+            this.setState({
+                newChatName:'',
+                others:[],
+                newChatModalVisib: false,
+            });
+            notification['success']({
+                message: 'Chat App',
+                description: 'Chat created',
+            });
+            this.loadChats();
+
+        }).catch(error => {
+            
+            notification['error']({
+                message: 'Chat App',
+                description: 'server has problem',
+            });
         });
-        console.log(this.state.newChatName)
+
+
     }
     handleNewChatCancel = () => {
         console.log('Clicked cancel button');
@@ -137,7 +168,6 @@ export default class ChatApp extends Component {
             newChatModalVisib: false,
         });
     };
-
     handleAddContOk = () => {
         this.setState({
             confirmLoading: true
@@ -152,9 +182,11 @@ export default class ChatApp extends Component {
                     addContactVisible: false,
                     confirmLoading: false
                 });
+            
+                this.loadContacts();
             }).catch(error => {
                 console.log("error:" + error.response.status)
-                
+
                 if (error.response.status == 400)
                     notification['info']({
                         message: 'Chat App',
@@ -176,22 +208,27 @@ export default class ChatApp extends Component {
             searchedUser: ''
         });
     };
-
     loadContacts() {
 
         loadUserContacts()
             .then(response => {
+
                 this.setState({
-                    conctacts: response.data.contacts,
+                    contacts:[],
+                    contactNames:[]
+                })
+                
+                this.setState({
+                    contacts: response.data.contacts,
                 });
 
-                for (var contact of this.state.conctacts) {
+                for (var contact of this.state.contacts) {
 
-                    this.state.conctactNames.push(<Option key={contact.id.toString(36)}>{contact.name}</Option>)
+                    this.state.contactNames.push(<Option key={contact.id.toString(36)}>{contact.name}</Option>)
                 }
 
-                console.log(this.state.conctacts)
-                console.log("names", this.state.conctactNames)
+                console.log(this.state.contacts)
+                console.log("names", this.state.contactNames)
 
             }).catch(error => {
                 notification['error']({
@@ -200,13 +237,11 @@ export default class ChatApp extends Component {
                 });
             });
     }
-
     updateChatName(event) {
         this.setState({
             newChatName: event.target.value
         });
     }
-
     searchingUser(phone) {
         searchUser(phone)
             .then(response => {
@@ -228,18 +263,41 @@ export default class ChatApp extends Component {
                 });
             });
     }
-
     handleSelectContactChange(value) {
-        console.log(`selected ${value}`);
 
+        this.setState({
+            others: value
+        })
+        console.log(this.state.others);
+    }
+    openAddContactModal() {
+        this.setState({
+            addContactVisible: true,
+        })
+    }
+    openNewGroupModal() {
+        this.loadContacts();
+        this.setState({
+            newChatModalTitle: 'Create New Group',
+            isChannel: false,
+            newChatModalVisib: true,
+        })
+    }
+    openNewChannelModal() {
+        
+        this.loadContacts();
+        this.setState({
+            newChatModalTitle: 'Create New Channel',
+            isChannel: true,
+            newChatModalVisib: true,
+        })
     }
 
     render() {
         var name = '';
         var phone = '';
         var email = '';
-        console.log('rendering', this.state.messages)
-
+        
         if (this.state.currentUser) {
             name = this.state.currentUser.name;
             phone = this.state.currentUser.phone;
@@ -251,6 +309,7 @@ export default class ChatApp extends Component {
                 <Layout className="content">
                     <Header><h2 className="app-title">Chat App</h2></Header>
                     <Layout>
+
                         <Sider
                             theme='light'>
                             <List
@@ -313,9 +372,7 @@ export default class ChatApp extends Component {
                                 </Menu.Item>
 
                                 <Menu.Item key="2"
-                                    onClick={(event) => this.setState({
-                                        addContactVisible: true,
-                                    })}>
+                                    onClick={(event) => this.openAddContactModal()}>
                                     <span>
                                         <Icon type="user-add" />
                                         <span>Add Contact</span>
@@ -323,17 +380,8 @@ export default class ChatApp extends Component {
                                 </Menu.Item>
 
 
-                                <Menu.Item
-                                    onClick={(event) => {
-                                        this.loadContacts();
-                                        this.setState({
-                                            newChatModalTitle: 'Create New Group',
-                                            isChannel: false,
-                                            newChatModalVisib: true,
-                                        })
-                                    }
-                                    }
-                                    key="3">
+                                <Menu.Item key="3"
+                                    onClick={(event) => this.openNewGroupModal()}>
                                     <span>
                                         <Icon type="usergroup-add" />
                                         <span>New group</span>
@@ -341,14 +389,7 @@ export default class ChatApp extends Component {
                                 </Menu.Item>
 
                                 <Menu.Item
-                                    onClick={(event) => {
-                                        this.loadContacts();
-                                        this.setState({
-                                            newChatModalTitle: 'Create New Channel',
-                                            isChannel: true,
-                                            newChatModalVisib: true,
-                                        })
-                                    }}
+                                    onClick={(event) => this.openNewChannelModal()}
                                     key="4">
                                     <span>
                                         <Icon type="alert" />
@@ -419,7 +460,7 @@ export default class ChatApp extends Component {
                                 placeholder="select Contact to add"
                                 onChange={this.handleSelectContactChange}
                             >
-                                {this.state.conctactNames}
+                                {this.state.contactNames}
                             </Select>,
                         </div>
 

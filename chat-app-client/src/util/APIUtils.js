@@ -123,7 +123,7 @@ export function loadUserContacts() {
     });
 }
 
-export function createChat(createChatReq) {
+export function createChatApi(createChatReq) {
 
     return axios({
         method: 'post',

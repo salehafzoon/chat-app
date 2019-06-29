@@ -56,7 +56,6 @@ class ChatController extends Controller
                 ], 200);
             }
             
-            $chat->name = $other->name;
             $chat->save();
             $chat->members()->save($user);
             $chat->members()->save($other);

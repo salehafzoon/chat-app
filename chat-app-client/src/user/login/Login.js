@@ -21,11 +21,6 @@ class Login extends Component {
 
         this.handleLogin = this.handleLogin.bind(this);
 
-        notification.config({
-            placement: 'topRight',
-            top: 70,
-            duration: 3,
-        });
     }
 
     handleLogin() {
@@ -34,7 +29,9 @@ class Login extends Component {
             description: "You're successfully logged in.",
         });
 
-        this.props.history.push("/ChatApp");
+        // this.props.history.push("/ChatApp");
+        this.props.history.replace("/ChatApp");
+
     }
 
     render() {
@@ -75,7 +72,6 @@ class LoginForm extends Component {
                 login(loginRequest)
                     .then(response => {
                         localStorage.setItem(ACCESS_TOKEN, response.data.access_token);
-                        // console.log(localStorage.getItem(ACCESS_TOKEN));
                         
                         this.setState({
                             disabledBtn: false
