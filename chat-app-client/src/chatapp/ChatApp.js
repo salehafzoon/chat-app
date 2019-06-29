@@ -4,6 +4,7 @@ import { Avatar, Input, Button, Icon, notification, Layout, Menu, List } from 'a
 import { getCurrentUser, loadUserChats } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { ACCESS_TOKEN } from '../constants';
 
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -20,6 +21,7 @@ export default class ChatApp extends Component {
         }
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
         this.loadChats = this.loadChats.bind(this);
+        this.handleLogout = this.handleLogout.bind(this);
 
         notification.config({
             placement: 'topRight',
@@ -27,6 +29,23 @@ export default class ChatApp extends Component {
             duration: 3,
         });
     }
+
+    handleLogout(redirectTo = "/login", notificationType = "success", description = "You're successfully logged out.") {
+        localStorage.removeItem(ACCESS_TOKEN);
+
+        this.setState({
+            currentUser: null,
+            isAuthenticated: false
+        });
+
+        this.props.history.push(redirectTo);
+
+        notification[notificationType]({
+            message: 'Chat App',
+            description: description,
+        });
+    }
+
 
     loadCurrentUser() {
         getCurrentUser()
@@ -36,7 +55,7 @@ export default class ChatApp extends Component {
                     isAuthenticated: true,
                     isLoading: false
                 });
-                console.log('currentUser', this.state.currentUser);
+                // console.log('currentUser', this.state.currentUser);
 
             }).catch(error => {
                 this.setState({
@@ -53,7 +72,7 @@ export default class ChatApp extends Component {
                     isAuthenticated: true,
                     isLoading: false
                 });
-                console.log('user chats', this.state.chats);
+                // console.log('user chats', this.state.chats);
 
             }).catch(error => {
                 this.setState({
@@ -61,6 +80,7 @@ export default class ChatApp extends Component {
                 });
             });
     }
+    
     componentDidMount() {
         this.loadCurrentUser();
         this.loadChats();
@@ -83,17 +103,18 @@ export default class ChatApp extends Component {
                 <Layout className="content">
                     <Header><h2 className="app-title">Chat App</h2></Header>
                     <Layout>
-
-                        <Sider className='aside'>
+                        <Sider
+                            theme='light'>
                             <List
                                 itemLayout="horizontal"
                                 dataSource={this.state.chats}
                                 renderItem={item => (
-                                    <List.Item>
+                                    <List.Item
+                                        onClick={(event) => console.log(item.id, 'clicked')}>
                                         <List.Item.Meta
                                             avatar={
-                                                <Avatar size="large" style={{verticalAlign: 'middle' }}>
-                                                    {item.name[0]}
+                                                <Avatar size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
+                                                    <h2>{item.name[0]}</h2>
                                                 </Avatar>
                                             }
                                             title={item.name}
@@ -108,7 +129,7 @@ export default class ChatApp extends Component {
 
                         </Content>
 
-                        <Sider className='aside'>
+                        <Sider>
 
                             <div className="profile-pannel">
                                 <span>
@@ -121,9 +142,12 @@ export default class ChatApp extends Component {
                             </div>
 
                             <Menu
+                                theme='light'
                                 className="command-menu">
 
-                                <Menu.Item key="1">
+                                <Menu.Item
+                                    onClick={(event) => console.log('alert clicked')}
+                                    key="1">
                                     <span>
                                         <Icon type="usergroup-add" />
                                         <span>New group</span>
@@ -137,7 +161,8 @@ export default class ChatApp extends Component {
                                     </span>
                                 </Menu.Item>
 
-                                <Menu.Item key="3">
+                                <Menu.Item key="3"
+                                    onClick={(event) => this.handleLogout()}>
                                     <span>
                                         <Icon type="logout" />
                                         <span>Logout</span>
