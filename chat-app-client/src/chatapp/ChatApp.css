@@ -1,6 +1,5 @@
 .container{
     padding: 3%;
-    margin: auto;
     width: 100%;
 }
 .content{
@@ -27,8 +26,49 @@
     margin: 0%;
 }
 .own-mess{
-    background-color: skyblue;
+    color: white;
+    position: relative;
+    margin-left: 20px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #99ccff;
+    width: 200px;
+    height: 50px;
+    text-align: left;
+    font: 400 .9em 'Open Sans', sans-serif;
+    border: 1px solid #97C6E3;
+    border-radius: 10px;
 }
 .other-mess{
-    background-color: wheat;
+
+    color: #004d99;
+    position: relative;
+    margin-bottom: 10px;
+    margin-left: calc(100% - 240px);
+    padding: 10px;
+    background-color: snow;
+    width: 200px;
+    height: 50px;
+    text-align: left;
+    font: 400 .9em 'Open Sans', sans-serif;
+    border: 1px solid snow;
+    border-radius: 10px;
+}
+.chat_title{
+    background-color: #004d99;
+    color: white;
+}
+.chat-back{
+    height: 300px;
+}
+.chat-pannel{
+    position: relative;
+}
+.message-inp{
+    position: absolute;
+    bottom: 0;
+}
+.chat_view{
+    position: relative;
+    top: 0;
 }

@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
-    , createChatApi,
+    , createChatApi, checkIsAdmin,
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -34,7 +34,9 @@ export default class ChatApp extends Component {
             userFounded: false,
             contacts: [],
             contactNames: [],
-            others:[]
+            others: [],
+            selectedChatName: '',
+            isAdmin: true
         }
 
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
@@ -52,6 +54,8 @@ export default class ChatApp extends Component {
         this.searchingUser = this.searchingUser.bind(this);
         this.loadContacts = this.loadContacts.bind(this);
         this.handleSelectContactChange = this.handleSelectContactChange.bind(this);
+
+        this.sendMessage = this.sendMessage.bind(this);
 
         notification.config({
             placement: 'topRight',
@@ -104,8 +108,23 @@ export default class ChatApp extends Component {
                 });
             });
     }
-    loadChatMessages(chatId) {
-        loadChatMessages(chatId)
+    loadChatMessages(chat) {
+    
+        checkIsAdmin(chat.id)
+            .then(response => {
+                this.setState({
+                    isAdmin: response.data.is_admin,
+                    isLoading: false
+                });
+            }).catch(error => {
+                this.setState({
+                    isLoading: false
+                });
+            });
+        this.setState({
+            selectedChatName: chat.name
+        })
+        loadChatMessages(chat.id)
             .then(response => {
                 this.setState({
                     messages: response.data.chat_messages,
@@ -116,7 +135,7 @@ export default class ChatApp extends Component {
                         message.own = true
                     else
                         message.own = null;
-                    console.log(message);
+                    // console.log(message);
                 }
 
             }).catch(error => {
@@ -129,7 +148,7 @@ export default class ChatApp extends Component {
         this.loadCurrentUser();
         this.loadChats();
     }
-    handleNewChatOk = ()=>{
+    handleNewChatOk = () => {
 
         let createChatRequest = {
             'name': this.state.newChatName,
@@ -137,28 +156,28 @@ export default class ChatApp extends Component {
             'isPrivate': false,
             'isChannel': this.state.isChannel
         }
-        console.log('creatChatReq',createChatRequest);
+        console.log('creatChatReq', createChatRequest);
 
         createChatApi(createChatRequest)
-        .then(response => {
-            this.setState({
-                newChatName:'',
-                others:[],
-                newChatModalVisib: false,
-            });
-            notification['success']({
-                message: 'Chat App',
-                description: 'Chat created',
-            });
-            this.loadChats();
+            .then(response => {
+                this.setState({
+                    newChatName: '',
+                    others: [],
+                    newChatModalVisib: false,
+                });
+                notification['success']({
+                    message: 'Chat App',
+                    description: 'Chat created',
+                });
+                this.loadChats();
 
-        }).catch(error => {
-            
-            notification['error']({
-                message: 'Chat App',
-                description: 'server has problem',
+            }).catch(error => {
+
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
             });
-        });
 
 
     }
@@ -182,7 +201,7 @@ export default class ChatApp extends Component {
                     addContactVisible: false,
                     confirmLoading: false
                 });
-            
+
                 this.loadContacts();
             }).catch(error => {
                 console.log("error:" + error.response.status)
@@ -214,10 +233,10 @@ export default class ChatApp extends Component {
             .then(response => {
 
                 this.setState({
-                    contacts:[],
-                    contactNames:[]
+                    contacts: [],
+                    contactNames: []
                 })
-                
+
                 this.setState({
                     contacts: response.data.contacts,
                 });
@@ -284,7 +303,7 @@ export default class ChatApp extends Component {
         })
     }
     openNewChannelModal() {
-        
+
         this.loadContacts();
         this.setState({
             newChatModalTitle: 'Create New Channel',
@@ -292,12 +311,14 @@ export default class ChatApp extends Component {
             newChatModalVisib: true,
         })
     }
+    sendMessage() {
 
+    }
     render() {
         var name = '';
         var phone = '';
         var email = '';
-        
+
         if (this.state.currentUser) {
             name = this.state.currentUser.name;
             phone = this.state.currentUser.phone;
@@ -317,7 +338,7 @@ export default class ChatApp extends Component {
                                 dataSource={this.state.chats}
                                 renderItem={item => (
                                     <List.Item
-                                        onClick={(event) => this.loadChatMessages(item.id)}>
+                                        onClick={(event) => this.loadChatMessages(item)}>
                                         <List.Item.Meta
                                             avatar={
                                                 <Avatar size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
@@ -331,20 +352,33 @@ export default class ChatApp extends Component {
                             />
                         </Sider>
 
-                        <Content>
-                            <List
-                                itemLayout="horizontal"
-                                dataSource={this.state.messages}
-                                renderItem={item => (
-                                    <List.Item
-                                        className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
-                                    >
-                                        <List.Item.Meta
-                                            title={<span>{item.content}</span>}
-                                        />
-                                    </List.Item>
-                                )}
+                        <Content className='chat-pannel'>
+                            <center><h2 className='chat_title'>{this.state.selectedChatName}</h2></center>
+                            <div className='chat_view'>
+                                <List
+                                    className='chat-back'
+                                    itemLayout="horizontal"
+                                    dataSource={this.state.messages}
+                                    renderItem={item => (
+                                        <List.Item
+                                            className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
+                                        >
+                                            <List.Item.Meta
+                                                title={<span>{item.content}</span>}
+                                            />
+                                        </List.Item>
+                                    )}
+                                />
+                            </div>
+
+                            <Search
+                                className='message-inp'
+                                disabled={this.state.isAdmin ? false : true}
+                                placeholder="message"
+                                enterButton="send"
+                                onSearch={value => this.sendMessage}
                             />
+
                         </Content>
 
                         <Sider>

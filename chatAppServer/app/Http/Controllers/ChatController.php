@@ -45,7 +45,6 @@ class ChatController extends Controller
                 ->update(['permission' => "ADMIN"]);
 
             $chat->members()->saveMany($others);
-
         } else {
 
             $other = User::find($request->input('others')[0]);
@@ -55,7 +54,7 @@ class ChatController extends Controller
                     'message' => 'user not found',
                 ], 200);
             }
-            
+
             $chat->save();
             $chat->members()->save($user);
             $chat->members()->save($other);
@@ -88,7 +87,7 @@ class ChatController extends Controller
                 'message' => 'not allowed',
             ], 403);
         }
-        
+
         $chat->delete();
 
         return response()->json([
@@ -193,6 +192,36 @@ class ChatController extends Controller
 
         return response()->json([
             'members' => $chat->members,
+        ], 200);
+    }
+
+    public function isAdmin(Request $request)
+    {
+
+        $chat = Chat::find($request->chat_id);
+
+        if (is_null($chat))
+            return response()->json([
+                'message' => 'chat not found',
+            ], 200);
+
+        if (!$chat->members->contains(auth()->user()))
+            return response()->json([
+                'message' => 'not allowed',
+            ], 403);
+
+        $isAdmin = true;
+
+        $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
+            ->where('user_id', auth()->user()->id)
+            ->where('permission', 'ADMIN')
+            ->get();
+
+        if (count($res) == 0)
+            $isAdmin = false;
+
+        return response()->json([
+            'is_admin' => $isAdmin,
         ], 200);
     }
 }

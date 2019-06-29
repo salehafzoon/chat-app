@@ -140,3 +140,17 @@ export function createChatApi(createChatReq) {
         }
     });
 }
+export function checkIsAdmin(chatId) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/is_admin",
+        data: {
+            'chat_id': chatId,
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
