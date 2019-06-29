@@ -15,7 +15,8 @@ class MessageController extends Controller
     { }
     public function send(Request $request)
     {
-        $chat =Chat::find($request->chat_id);
+        
+        $chat =Chat::find($request->input('chat_id'));
 
         if (is_null($chat)) {
             return response()->json([
@@ -24,7 +25,7 @@ class MessageController extends Controller
         }
         
         if($chat->is_private == 1 or $chat->is_channel == 1 ){
-            $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
+            $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
                 ->where('user_id', auth()->user()->id)
                 ->where('permission', 'ADMIN')
                 ->get();
@@ -37,20 +38,20 @@ class MessageController extends Controller
         }
 
         $message = new Message;
-        $message->content = $request->content;
-        $message->chat_id = $request->chat_id;
+        $message->sender_id = auth()->user()->id;
+        $message->chat_id = $request->input('chat_id');
+        $message->content = $request->input('content');
 
         $message->save();
 
         return response()->json([
             'message' => 'message sended',
-            'user_id'=> auth()->user()->id
         ], 200);
     }
     public function chatMessages(Request $request)
     {
 
-        $chat = Chat::find($request->chat_id);
+        $chat = Chat::find($request->input('chat_id'));
 
         return response()->json([
             'chat_messages' => $chat->messegaes

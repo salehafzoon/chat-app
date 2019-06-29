@@ -20,8 +20,6 @@ class ChatController extends Controller
         $chat->is_private = $request->input('isPrivate');
         $chat->is_channel = $request->input('isChannel');
 
-        $chat->save();
-
         $others = array();
 
         if (count($request->input('others')) != 1) {
@@ -38,7 +36,7 @@ class ChatController extends Controller
                 }
                 array_push($others, $other);
             }
-
+            $chat->save();
             $chat->members()->save($user);
 
             DB::table('chat_user')
@@ -47,18 +45,22 @@ class ChatController extends Controller
                 ->update(['permission' => "ADMIN"]);
 
             $chat->members()->saveMany($others);
+
         } else {
-            $chat->members()->save($user);
+
             $other = User::find($request->input('others')[0]);
 
             if (is_null($other)) {
-                $chat->delete();
                 return response()->json([
                     'message' => 'user not found',
                 ], 200);
             }
-
+            
+            $chat->name = $other->name;
+            $chat->save();
+            $chat->members()->save($user);
             $chat->members()->save($other);
+
             DB::table('chat_user')->where('chat_id', $chat->id)->update(['permission' => "ADMIN"]);
         }
 

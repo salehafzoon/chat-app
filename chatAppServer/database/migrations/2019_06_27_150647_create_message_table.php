@@ -12,6 +12,7 @@ class CreateMessageTable extends Migration
            
             $table->increments('id');
             $table->string('content');
+            $table->integer('sender_id');
             $table->timestamp('send_date')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamps();
 
