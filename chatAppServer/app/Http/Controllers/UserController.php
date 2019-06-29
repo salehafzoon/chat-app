@@ -14,10 +14,15 @@ class UserController extends Controller
     {
         $results = DB::table('users')
             ->where('phone', $request->phone)
-            ->get();
+            ->first();
 
+        if (!$results)
+            return response()->json([
+                'message' => 'not found'
+            ], 400);
+        
         return response()->json([
-            'users' => $results
+            'user' => $results
         ], 200);
     }
     public function blockOrUnblockUser(Request $request)
@@ -85,7 +90,6 @@ class UserController extends Controller
                 'chats' => $chats
             ], 200);
     }
-
     public function userContacts(Request $request)
     {
         $user = User::find(Auth::user()->id);
@@ -95,7 +99,6 @@ class UserController extends Controller
                 'chats' => $user->contacts
             ], 200);
     }
-
     public function userAddContact(Request $request)
     {
         $user = User::find(Auth::user()->id);

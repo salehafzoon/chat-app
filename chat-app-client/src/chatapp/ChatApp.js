@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
 import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal } from 'antd';
-import { getCurrentUser, loadUserChats, loadChatMessages } from '../util/APIUtils'
+import { getCurrentUser, loadUserChats, loadChatMessages, searchUser } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
 
 const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
+const { Search } = Input;
 
 export default class ChatApp extends Component {
     constructor(props) {
@@ -20,9 +21,13 @@ export default class ChatApp extends Component {
             messages: [],
             confirmLoading: false,
             newChatModalVisib: false,
-            newChatName:'',
-            newChatModalTitle:'',
-            isChannel:false
+            newChatName: '',
+            newChatModalTitle: '',
+            isChannel: false,
+            addContactVisible: false,
+            searchPhone: '',
+            searchedUser: '',
+            userFounded: false
         }
 
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
@@ -31,9 +36,14 @@ export default class ChatApp extends Component {
 
         this.handleNewChatOk = this.handleNewChatOk.bind(this);
         this.handleNewChatCancel = this.handleNewChatCancel.bind(this);
-        
+
         this.updateChatName = this.updateChatName.bind(this);
-        
+
+        this.handleAddContOk = this.handleAddContOk.bind(this);
+        this.handleAddContCancel = this.handleAddContCancel.bind(this);
+
+        this.searchingUser = this.searchingUser.bind(this);
+
         notification.config({
             placement: 'topRight',
             top: 70,
@@ -123,10 +133,41 @@ export default class ChatApp extends Component {
         });
     };
 
+    handleAddContOk = () => {
+        this.setState({
+            addContactVisible: false,
+        });
+    }
+    handleAddContCancel = () => {
+        this.setState({
+            addContactVisible: false,
+        });
+    };
+
     updateChatName(event) {
         this.setState({
             newChatName: event.target.value
         });
+    }
+
+    searchingUser(phone) {
+        searchUser(phone)
+            .then(response => {
+                this.setState({
+                    searchedUser: response.data.user,
+                    isLoading: false,
+                    userFounded: true
+                });
+                console.log(this.state.searchedUser)
+            }).catch(error => {
+                this.setState({
+                    isLoading: false
+                });
+                notification['info']({
+                    message: 'Chat App',
+                    description: 'user not found',
+                });
+            });
     }
 
     render() {
@@ -173,8 +214,8 @@ export default class ChatApp extends Component {
                                 dataSource={this.state.messages}
                                 renderItem={item => (
                                     <List.Item
-                                    className={ item.sender_id===this.state.currentUser.id ? 'own-mess' : 'other-mess' }
-                                        >
+                                        className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
+                                    >
                                         <List.Item.Meta
                                             title={<span>{item.content}</span>}
                                         />
@@ -199,33 +240,60 @@ export default class ChatApp extends Component {
                                 theme='light'
                                 className="command-menu">
 
+                                <Menu.Item key="1"
+                                    onClick={(event) => this.handleLogout()}>
+                                    <span>
+                                        <Icon type="team" />
+                                        <span>Contacts</span>
+                                    </span>
+                                </Menu.Item>
+
+                                <Menu.Item key="2"
+                                    onClick={(event) => this.setState({
+                                        addContactVisible: true,
+                                    })}>
+                                    <span>
+                                        <Icon type="user-add" />
+                                        <span>Add Contact</span>
+                                    </span>
+                                </Menu.Item>
+
+
                                 <Menu.Item
                                     onClick={(event) => this.setState({
-                                        newChatModalTitle:'Create New Group',
-                                        isChannel:false,
+                                        newChatModalTitle: 'Create New Group',
+                                        isChannel: false,
                                         newChatModalVisib: true,
                                     })}
-                                    key="1">
+                                    key="3">
                                     <span>
                                         <Icon type="usergroup-add" />
                                         <span>New group</span>
                                     </span>
                                 </Menu.Item>
 
-                                <Menu.Item 
-                                onClick={(event) => this.setState({
-                                    newChatModalTitle:'Create New Channel',
-                                    isChannel:true,
-                                    newChatModalVisib: true,
-                                })}
-                                key="2">
+                                <Menu.Item
+                                    onClick={(event) => this.setState({
+                                        newChatModalTitle: 'Create New Channel',
+                                        isChannel: true,
+                                        newChatModalVisib: true,
+                                    })}
+                                    key="4">
                                     <span>
                                         <Icon type="alert" />
                                         <span>New Chennel</span>
                                     </span>
                                 </Menu.Item>
 
-                                <Menu.Item key="3"
+                                <Menu.Item key="5"
+                                    onClick={(event) => this.handleLogout()}>
+                                    <span>
+                                        <Icon type="setting" />
+                                        <span>Setting</span>
+                                    </span>
+                                </Menu.Item>
+
+                                <Menu.Item key="6"
                                     onClick={(event) => this.handleLogout()}>
                                     <span>
                                         <Icon type="logout" />
@@ -239,17 +307,43 @@ export default class ChatApp extends Component {
                     </Layout>
 
                     <Modal
+                        title="Add Contact"
+                        visible={this.state.addContactVisible}
+                        onOk={this.handleAddContOk}
+                        okText='Add Contact'
+                        onCancel={this.handleAddContCancel}
+                    >
+
+                        <Search placeholder="user phone number" onSearch={value => this.searchingUser(value)} enterButton />
+                        <center>
+                            <Avatar
+                                visibility={this.state.userFounded ? "visible" : "hidden"}
+                                size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
+                                <h2>{this.state.userFounded ? this.state.searchedUser.name[0] : ""}</h2>
+                            </Avatar>
+                            <span>{this.state.searchedUser.name}</span>
+
+                        </center>
+
+                    </Modal>
+
+
+                    <Modal
                         title="New Chat"
                         visible={this.state.newChatModalVisib}
                         onOk={this.handleNewChatOk}
                         confirmLoading={this.state.newChatModalConfLoading}
                         onCancel={this.handleNewChatCancel}
                     >
-                        <center><h2>{this.state.newChatModalTitle}</h2></center>
-                        <Input value={this.state.newChatName} onChange={this.updateChatName}
-                        placeholder='Chat Name'/>
-                        
+                        <div>
+                            <center><h2>{this.state.newChatModalTitle}</h2></center>
+                            <Input value={this.state.newChatName} onChange={this.updateChatName}
+                                placeholder='Chat Name' />
+
+                        </div>
+
                     </Modal>
+
 
                 </Layout>
 

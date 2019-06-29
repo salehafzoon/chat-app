@@ -80,3 +80,18 @@ export function loadChatMessages(chatId) {
 
 }
 
+export function searchUser(phone) {
+
+    return axios({
+      method: 'post',
+      url: API_BASE_URL + "/user/search",
+      data:{
+          'phone':phone
+      },
+      headers: {
+          'content-type': 'application/json',
+          'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+      }
+    });
+
+}
