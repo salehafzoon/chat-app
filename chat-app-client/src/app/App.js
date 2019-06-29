@@ -100,14 +100,14 @@ class App extends Component {
           <div className="container">
             <Switch>
 
+            <Route path="/ChatApp"
+                render={(props) => <ChatApp {...props} />}></Route>
+
               <Route path="/login"
                 render={(props) => <Login onLogin={this.handleLogin} {...props} />}></Route>
 
               <Route path="/signup"
                 component={Signup}></Route>
-
-              <Route path="/login"
-                render={(props) => <ChatApp {...props} />}></Route>
 
             </Switch>
           </div>

@@ -63,7 +63,7 @@ class LoginForm extends Component {
                         this.props.onLogin();
 
                     }).catch(error => {
-                        console.log(error.message);
+                        // console.log(error.message);
                     });
 
             }

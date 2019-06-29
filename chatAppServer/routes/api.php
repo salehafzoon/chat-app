@@ -7,7 +7,7 @@ Route::post('auth/register', 'AuthController@register');
 Route::post('auth/login', 'AuthController@login');
 
 Route::group(['middleware' => ['jwt.verify']], function () {
-    
+
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
 
     Route::get('user/me', 'AuthController@currentUser');
@@ -26,4 +26,3 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::get('/chat/message', 'MessageController@chatMessages');
     Route::post('/chat/message/send', 'MessageController@send');
 });
-
