@@ -96,7 +96,7 @@ class UserController extends Controller
 
         return response()
             ->json([
-                'chats' => $user->contacts
+                'contacts' => $user->contacts
             ], 200);
     }
     public function userAddContact(Request $request)
@@ -110,6 +110,14 @@ class UserController extends Controller
                     'message' => 'contact not found'
                 ], 400);
         }
+
+        if ( $user->contacts->contains($contact)) {
+            return response()
+                ->json([
+                    'message' => 'contact already added'
+                ], 400);
+        }
+        
         $user->contacts()->save($contact);
 
         return response()

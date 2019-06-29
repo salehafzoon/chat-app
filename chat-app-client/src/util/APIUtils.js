@@ -4,7 +4,7 @@ const axios = require('axios');
 
 
 export function signup(signupRequest) {
-    
+
     return axios({
         method: 'POST',
         headers: {
@@ -66,32 +66,77 @@ export function loadUserChats() {
 
 export function loadChatMessages(chatId) {
 
-      return axios({
+    return axios({
         method: 'post',
         url: API_BASE_URL + "/chat/message",
-        data:{
-            'chat_id':chatId
+        data: {
+            'chat_id': chatId
         },
         headers: {
             'content-type': 'application/json',
             'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
         }
-      });
+    });
 
 }
 
 export function searchUser(phone) {
 
     return axios({
-      method: 'post',
-      url: API_BASE_URL + "/user/search",
-      data:{
-          'phone':phone
-      },
-      headers: {
-          'content-type': 'application/json',
-          'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
-      }
+        method: 'post',
+        url: API_BASE_URL + "/user/search",
+        data: {
+            'phone': phone
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
     });
 
+}
+
+export function addContact(contactId) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/user/contact/add",
+        data: {
+            'contact_id': contactId
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+
+export function loadUserContacts() {
+
+    return axios({
+        method: 'get',
+        url: API_BASE_URL + "/user/contact",
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+
+export function createChat(createChatReq) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/create",
+        data: {
+            'name': createChatReq.name,
+            'others': createChatReq.others,
+            'isPrivate': createChatReq.isPrivate,
+            'isChannel': createChatReq.isChannel
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
 }
