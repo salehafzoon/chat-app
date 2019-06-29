@@ -64,16 +64,19 @@ export function loadUserChats() {
     });
 }
 
-export function loadChatMessages() {
+export function loadChatMessages(chatId) {
 
-    return axios({
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+      return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/message",
+        data:{
+            'chat_id':chatId
         },
-        url: API_BASE_URL + "/user/chat",
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+      });
 
-    });
 }
 

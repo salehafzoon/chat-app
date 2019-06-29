@@ -67,9 +67,17 @@ class UserController extends Controller
     public function userChats(Request $request){
 
         $user = User::find(Auth::user()->id);
-        
+        $chats = $user->chats;
+        foreach ($chats as $chat) {
+            if($chat->is_private){
+                foreach ($chat->members as $member){
+                    if($member->id!=auth()->user()->id)
+                        $chat->name = $member->name;
+                }
+            }
+        }
         return response()
-        ->json(['chats' => $user->chats
+        ->json(['chats' => $chats
         ],200);
 
     }

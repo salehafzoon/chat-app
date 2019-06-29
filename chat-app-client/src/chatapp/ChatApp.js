@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import 'antd/dist/antd.css';
-import { Avatar, Input, Button, Icon, notification, Layout, Menu, List } from 'antd';
-import { getCurrentUser, loadUserChats } from '../util/APIUtils'
+import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal } from 'antd';
+import { getCurrentUser, loadUserChats, loadChatMessages } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
@@ -17,19 +17,26 @@ export default class ChatApp extends Component {
             currentUser: null,
             isAuthenticated: true,
             isLoading: false,
-            chats: []
+            chats: [],
+            messages: [],
+            confirmLoading: false,
+            newChatModalVisib: false,
+            
         }
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
         this.loadChats = this.loadChats.bind(this);
         this.handleLogout = this.handleLogout.bind(this);
+
+        this.handleNewChatOk = this.handleNewChatOk.bind(this);
+        this.handleNewChatCancel = this.handleNewChatCancel.bind(this);
 
         notification.config({
             placement: 'topRight',
             top: 70,
             duration: 3,
         });
-    }
 
+    }
     handleLogout(redirectTo = "/login", notificationType = "success", description = "You're successfully logged out.") {
         localStorage.removeItem(ACCESS_TOKEN);
 
@@ -45,8 +52,6 @@ export default class ChatApp extends Component {
             description: description,
         });
     }
-
-
     loadCurrentUser() {
         getCurrentUser()
             .then(response => {
@@ -63,16 +68,33 @@ export default class ChatApp extends Component {
                 });
             });
     }
-
     loadChats() {
         loadUserChats()
             .then(response => {
                 this.setState({
                     chats: response.data.chats,
-                    isAuthenticated: true,
                     isLoading: false
                 });
-                // console.log('user chats', this.state.chats);
+            }).catch(error => {
+                this.setState({
+                    isLoading: false
+                });
+            });
+    }
+    loadChatMessages(chatId) {
+        loadChatMessages(chatId)
+            .then(response => {
+                this.setState({
+                    messages: response.data.chat_messages,
+                    isLoading: false
+                });
+                for (var message of this.state.messages) {
+                    if (message.sender_id === this.state.currentUser.id)
+                        message.own = true
+                    else
+                        message.own = null;
+                    console.log(message);
+                }
 
             }).catch(error => {
                 this.setState({
@@ -80,19 +102,28 @@ export default class ChatApp extends Component {
                 });
             });
     }
-    
     componentDidMount() {
         this.loadCurrentUser();
         this.loadChats();
     }
-
+    handleNewChatOk = () => {
+        this.setState({
+            newChatModalVisib: false,
+        });
+    }
+    handleNewChatCancel = () => {
+        console.log('Clicked cancel button');
+        this.setState({
+            newChatModalVisib: false,
+        });
+    };
     render() {
         var name = '';
         var phone = '';
         var email = '';
+        console.log('rendering', this.state.messages)
 
         if (this.state.currentUser) {
-            console.log('cur user in render', this.state.currentUser)
             name = this.state.currentUser.name;
             phone = this.state.currentUser.phone;
             email = this.state.currentUser.email;
@@ -110,7 +141,7 @@ export default class ChatApp extends Component {
                                 dataSource={this.state.chats}
                                 renderItem={item => (
                                     <List.Item
-                                        onClick={(event) => console.log(item.id, 'clicked')}>
+                                        onClick={(event) => this.loadChatMessages(item.id)}>
                                         <List.Item.Meta
                                             avatar={
                                                 <Avatar size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
@@ -118,7 +149,6 @@ export default class ChatApp extends Component {
                                                 </Avatar>
                                             }
                                             title={item.name}
-                                            description=""
                                         />
                                     </List.Item>
                                 )}
@@ -126,7 +156,19 @@ export default class ChatApp extends Component {
                         </Sider>
 
                         <Content>
-
+                            <List
+                                itemLayout="horizontal"
+                                dataSource={this.state.messages}
+                                renderItem={item => (
+                                    <List.Item
+                                    className={ item.sender_id===this.state.currentUser.id ? 'own-mess' : 'other-mess' }
+                                        >
+                                        <List.Item.Meta
+                                            title={<span>{item.content}</span>}
+                                        />
+                                    </List.Item>
+                                )}
+                            />,
                         </Content>
 
                         <Sider>
@@ -146,7 +188,9 @@ export default class ChatApp extends Component {
                                 className="command-menu">
 
                                 <Menu.Item
-                                    onClick={(event) => console.log('alert clicked')}
+                                    onClick={(event) => this.setState({
+                                        newChatModalVisib: true,
+                                    })}
                                     key="1">
                                     <span>
                                         <Icon type="usergroup-add" />
@@ -173,6 +217,17 @@ export default class ChatApp extends Component {
                         </Sider>
 
                     </Layout>
+
+                    <Modal
+                        title="Title"
+                        visible={this.state.newChatModalVisib}
+                        onOk={this.handleNewChatOk}
+                        confirmLoading={this.state.newChatModalConfLoading}
+                        onCancel={this.handleNewChatCancel}
+                    >
+                        <p>ModalText</p>
+                    </Modal>
+
                 </Layout>
 
 

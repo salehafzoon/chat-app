@@ -23,6 +23,6 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/chat/member/delete', 'ChatController@deleteMember');
     Route::get('/chat/member', 'ChatController@members');
 
-    Route::get('/chat/message', 'MessageController@chatMessages');
+    Route::post('/chat/message', 'MessageController@chatMessages');
     Route::post('/chat/message/send', 'MessageController@send');
 });
