@@ -6,7 +6,6 @@ import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
 
-
 const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
 
@@ -21,15 +20,20 @@ export default class ChatApp extends Component {
             messages: [],
             confirmLoading: false,
             newChatModalVisib: false,
-            
+            newChatName:'',
+            newChatModalTitle:'',
+            isChannel:false
         }
+
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
         this.loadChats = this.loadChats.bind(this);
         this.handleLogout = this.handleLogout.bind(this);
 
         this.handleNewChatOk = this.handleNewChatOk.bind(this);
         this.handleNewChatCancel = this.handleNewChatCancel.bind(this);
-
+        
+        this.updateChatName = this.updateChatName.bind(this);
+        
         notification.config({
             placement: 'topRight',
             top: 70,
@@ -110,6 +114,7 @@ export default class ChatApp extends Component {
         this.setState({
             newChatModalVisib: false,
         });
+        console.log(this.state.newChatName)
     }
     handleNewChatCancel = () => {
         console.log('Clicked cancel button');
@@ -117,6 +122,13 @@ export default class ChatApp extends Component {
             newChatModalVisib: false,
         });
     };
+
+    updateChatName(event) {
+        this.setState({
+            newChatName: event.target.value
+        });
+    }
+
     render() {
         var name = '';
         var phone = '';
@@ -189,6 +201,8 @@ export default class ChatApp extends Component {
 
                                 <Menu.Item
                                     onClick={(event) => this.setState({
+                                        newChatModalTitle:'Create New Group',
+                                        isChannel:false,
                                         newChatModalVisib: true,
                                     })}
                                     key="1">
@@ -198,7 +212,13 @@ export default class ChatApp extends Component {
                                     </span>
                                 </Menu.Item>
 
-                                <Menu.Item key="2">
+                                <Menu.Item 
+                                onClick={(event) => this.setState({
+                                    newChatModalTitle:'Create New Channel',
+                                    isChannel:true,
+                                    newChatModalVisib: true,
+                                })}
+                                key="2">
                                     <span>
                                         <Icon type="alert" />
                                         <span>New Chennel</span>
@@ -219,13 +239,16 @@ export default class ChatApp extends Component {
                     </Layout>
 
                     <Modal
-                        title="Title"
+                        title="New Chat"
                         visible={this.state.newChatModalVisib}
                         onOk={this.handleNewChatOk}
                         confirmLoading={this.state.newChatModalConfLoading}
                         onCancel={this.handleNewChatCancel}
                     >
-                        <p>ModalText</p>
+                        <center><h2>{this.state.newChatModalTitle}</h2></center>
+                        <Input value={this.state.newChatName} onChange={this.updateChatName}
+                        placeholder='Chat Name'/>
+                        
                     </Modal>
 
                 </Layout>

@@ -38,17 +38,10 @@ class User extends Authenticatable implements JWTSubject
             $this->attributes['password'] = bcrypt($password);
         }
     }
-    // public function messages(){
-    //     return $this->belongsToMany(Message::class);
-    // }
-    // public function groups(){
-    //     return $this->belongsToMany(Group::class);
-    // }
-    // public function blockUsers(){
+    public function contacts(){
 
-    //     return $this->belongsToMany(User::class, 'block_user', 'user_id', 'block_id');
-    // }
-
+        return $this->belongsToMany(User::class, 'contacts', 'user_id', 'contact_id');
+    }
     public function chats(){
 
         return $this->belongsToMany(Chat::class, 'chat_user', 'user_id','chat_id');

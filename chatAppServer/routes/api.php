@@ -9,10 +9,12 @@ Route::post('auth/login', 'AuthController@login');
 Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::get('/logout', 'AuthController@logout')->name('api.jwt.logout');
-
     Route::get('user/me', 'AuthController@currentUser');
+    
+    Route::get('user/contact', 'UserController@userContacts');
+    Route::post('user/contact/add', 'UserController@userAddContact');
 
-    Route::get('/user/search', 'UserController@searchUser');
+    Route::post('/user/search', 'UserController@searchUser');
     Route::get('/user/chat', 'UserController@userChats');
 
     Route::post('/chat/create', 'ChatController@create');

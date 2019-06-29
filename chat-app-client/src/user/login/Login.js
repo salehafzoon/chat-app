@@ -113,6 +113,7 @@ class LoginForm extends Component {
                     {getFieldDecorator('password', {
                         rules: [{ required: true, message: 'Please input your Password!' }],
                     })(
+
                         <Input
                             prefix={<Icon type="lock" />}
                             size="large"

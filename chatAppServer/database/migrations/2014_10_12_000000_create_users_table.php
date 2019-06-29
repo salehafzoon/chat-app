@@ -21,20 +21,21 @@ class CreateUsersTable extends Migration
             $table->timestamps();
         });
 
-        // Schema::create('block_user', function (Blueprint $table) {
-        //     $table->increments('id');
+        Schema::create('contacts', function (Blueprint $table) {
+            $table->increments('id');
         
-        //     $table->integer('user_id')->unsigned()->index();
-        //     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->integer('user_id')->unsigned()->index();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         
-        //     $table->integer('block_id')->unsigned()->index();
-        //     $table->foreign('block_id')->references('id')->on('users')->onDelete('cascade');
-        // });
+            $table->integer('contact_id')->unsigned()->index();
+            $table->foreign('contact_id')->references('id')->on('users')->onDelete('cascade');
+        });
         
     }
 
     public function down()
     {
+        Schema::dropIfExists('user_contacts');
         Schema::dropIfExists('users');
     }
 }
