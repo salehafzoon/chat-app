@@ -13,6 +13,7 @@ class MessageController extends Controller
 
     public function autherize(Request $request)
     { }
+    
     public function send(Request $request)
     {
         
@@ -54,7 +55,7 @@ class MessageController extends Controller
         $chat = Chat::find($request->input('chat_id'));
 
         return response()->json([
-            'chat_messages' => $chat->messegaes
+            'chat_messages' => $chat->messeges
         ], 200);
     }
 }

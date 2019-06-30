@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select, TreeSelect } from 'antd';
 import {
-    getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
+    getCurrentUser, loadUserChats, loadChatMessagesApi, searchUser, addContact, loadUserContacts
     , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, blockUnblockUser, checkIsAllowed,
     checkIsBlock, uppdateChatMembers,deleteChatApi
 } from '../util/APIUtils'
@@ -163,7 +163,15 @@ export default class ChatApp extends Component {
         this.setState({
             selectedChatName: chat.name
         })
-        loadChatMessages(chat.id)
+
+        // for (var message of chat.messages) {
+        //     if (message.sender_id === this.state.currentUser.id)
+        //         message.own = true
+        //     else
+        //         message.own = null;
+        // }
+
+        loadChatMessagesApi(chat.id)
             .then(response => {
                 this.setState({
                     messages: response.data.chat_messages,
@@ -182,9 +190,23 @@ export default class ChatApp extends Component {
                 });
             });
     }
-    componentDidMount() {
-        this.loadCurrentUser();
-        this.loadChats();
+    async componentDidMount() {
+
+        try {
+            setInterval(async () => {
+
+                await this.loadCurrentUser();
+                await this.loadChats();
+                if(this.state.curChat !=null){
+                    console.log(this.state.curChat)
+                    await this.loadChatMessages(this.state.curChat)
+                }
+
+                console.log('update')
+            }, 4000);
+          } catch(e) {
+            console.log(e);
+          }
     }
     handleNewChatOk = () => {
 
@@ -732,7 +754,7 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="1"
                                     onClick={(event) => this.openNewConvModal()}>
                                     <span>
-                                        <Icon type="message" />
+                                        <Icon type="message" style={{ fontSize: '30px'}}/>
                                         <span>New conversion</span>
                                     </span>
                                 </Menu.Item>

@@ -67,6 +67,7 @@ class UserController extends Controller
         $user = User::find(Auth::user()->id);
         $chats = $user->chats;
         foreach ($chats as $chat) {
+            $r = $chat->messeges;
             if ($chat->is_private) {
                 foreach ($chat->members as $member) {
                     if ($member->id != auth()->user()->id)
@@ -79,6 +80,7 @@ class UserController extends Controller
                 'chats' => $chats
             ], 200);
     }
+
     public function userContacts(Request $request)
     {
         $user = User::find(Auth::user()->id);

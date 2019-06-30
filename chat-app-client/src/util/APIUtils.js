@@ -64,7 +64,7 @@ export function loadUserChats() {
     });
 }
 
-export function loadChatMessages(chatId) {
+export function loadChatMessagesApi(chatId) {
 
     return axios({
         method: 'post',
