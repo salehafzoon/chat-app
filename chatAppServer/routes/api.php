@@ -19,7 +19,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::post('/chat/create', 'ChatController@create');
     Route::post('/chat/delete', 'ChatController@delete');
-    Route::get('/chat/info', 'ChatController@info');
+    Route::post('/chat/info', 'ChatController@info');
     Route::post('/chat/is_admin', 'ChatController@isAdmin');
 
     Route::post('/chat/member/add', 'ChatController@addMember');

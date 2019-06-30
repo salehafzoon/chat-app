@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
-    , createChatApi, checkIsAdmin,
+    , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -36,7 +36,13 @@ export default class ChatApp extends Component {
             contactNames: [],
             others: [],
             selectedChatName: '',
-            isAdmin: true
+            curChat: null,
+            isAdmin: true,
+            curChatInfo: null,
+            privateChatModalVisib: false,
+            publicChatModalVisib: false,
+            isUserBlocked: false,
+
         }
 
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
@@ -56,6 +62,13 @@ export default class ChatApp extends Component {
         this.handleSelectContactChange = this.handleSelectContactChange.bind(this);
 
         this.sendMessage = this.sendMessage.bind(this);
+        this.showChatInfo = this.showChatInfo.bind(this);
+
+        this.handlePrivChatOk = this.handlePrivChatOk.bind(this);
+        this.handlePrivChatCancel = this.handlePrivChatCancel.bind(this);
+
+        this.blockOrUnblockUser = this.blockOrUnblockUser.bind(this);
+        this.checkUserIsBloked = this.checkUserIsBloked.bind(this);
 
         notification.config({
             placement: 'topRight',
@@ -109,7 +122,11 @@ export default class ChatApp extends Component {
             });
     }
     loadChatMessages(chat) {
-    
+
+        this.setState({
+            curChat: chat
+        })
+
         checkIsAdmin(chat.id)
             .then(response => {
                 this.setState({
@@ -311,7 +328,62 @@ export default class ChatApp extends Component {
             newChatModalVisib: true,
         })
     }
-    sendMessage() {
+    sendMessage(message) {
+
+        console.log(message, this.state.curChat.id)
+
+        sendMessageApi(this.state.curChat.id, message)
+            .then(response => {
+                this.loadChatMessages(this.state.curChat)
+            }).catch(error => {
+
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
+
+    }
+    showChatInfo() {
+
+        getChatInfo(this.state.curChat.id)
+            .then(response => {
+                this.setState({
+                    curChatInfo: response.data.info
+                })
+                if (this.state.curChatInfo.is_private) {
+                    for (var member of this.state.curChatInfo.members) {
+                        if(member.id !==this.state.currentUser.id)
+                            this.checkUserIsBloked(this.state.curChat.id,member.id)
+                    }
+                    this.setState({
+                        privateChatModalVisib: true
+                    })
+                } else
+                    this.setState({
+                        publicChatModalVisib: true
+                    })
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
+    }
+    checkUserIsBloked(chatId,userId){
+
+    }
+    handlePrivChatCancel() {
+        this.setState({
+            privateChatModalVisib: false,
+        });
+    }
+    handlePrivChatOk() {
+        this.setState({
+            privateChatModalVisib: false,
+        });
+    }
+    blockOrUnblockUser() {
 
     }
     render() {
@@ -352,8 +424,15 @@ export default class ChatApp extends Component {
                             />
                         </Sider>
 
-                        <Content className='chat-pannel'>
-                            <center><h2 className='chat_title'>{this.state.selectedChatName}</h2></center>
+                        <Content className='chat_panel'>
+                            <div className='chat_title-panel'>
+                                <center>
+                                    <span className='chat_title'>{this.state.selectedChatName}</span>
+                                    <Button type="primary" shape="circle" icon="more"
+                                        onClick={this.showChatInfo} />
+                                </center>
+                            </div>
+
                             <div className='chat_view'>
                                 <List
                                     className='chat-back'
@@ -376,7 +455,7 @@ export default class ChatApp extends Component {
                                 disabled={this.state.isAdmin ? false : true}
                                 placeholder="message"
                                 enterButton="send"
-                                onSearch={value => this.sendMessage}
+                                onSearch={value => this.sendMessage(value)}
                             />
 
                         </Content>
@@ -400,8 +479,8 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="1"
                                     onClick={(event) => this.handleLogout()}>
                                     <span>
-                                        <Icon type="team" />
-                                        <span>Contacts</span>
+                                        <Icon type="message" />
+                                        <span>New conversion</span>
                                     </span>
                                 </Menu.Item>
 
@@ -413,7 +492,6 @@ export default class ChatApp extends Component {
                                     </span>
                                 </Menu.Item>
 
-
                                 <Menu.Item key="3"
                                     onClick={(event) => this.openNewGroupModal()}>
                                     <span>
@@ -422,24 +500,15 @@ export default class ChatApp extends Component {
                                     </span>
                                 </Menu.Item>
 
-                                <Menu.Item
-                                    onClick={(event) => this.openNewChannelModal()}
-                                    key="4">
+                                <Menu.Item key="4"
+                                    onClick={(event) => this.openNewChannelModal()}>
                                     <span>
-                                        <Icon type="alert" />
+                                        <Icon type="sound" />
                                         <span>New Chennel</span>
                                     </span>
                                 </Menu.Item>
 
                                 <Menu.Item key="5"
-                                    onClick={(event) => this.handleLogout()}>
-                                    <span>
-                                        <Icon type="setting" />
-                                        <span>Setting</span>
-                                    </span>
-                                </Menu.Item>
-
-                                <Menu.Item key="6"
                                     onClick={(event) => this.handleLogout()}>
                                     <span>
                                         <Icon type="logout" />
@@ -496,6 +565,29 @@ export default class ChatApp extends Component {
                             >
                                 {this.state.contactNames}
                             </Select>,
+                        </div>
+
+                    </Modal>
+
+                    <Modal
+                        title="Chat info"
+                        visible={this.state.privateChatModalVisib}
+                        onOk={this.handlePrivChatOk}
+                        onCancel={this.handlePrivChatCancel} >
+                        <div>
+                            <center>
+                                <Avatar
+                                    size='large'>
+                                    <h2>{this.state.curChatInfo != null ? this.state.curChatInfo.name[0] : ''}</h2>
+                                </Avatar>
+                                <h2>{this.state.curChatInfo != null ? this.state.curChatInfo.name : ''}</h2>
+
+                                <Button type={this.state.isUserBlocked === true ? "primary" : "danger"} block
+                                    onClick={this.blockOrUnblockUser}>
+                                    {this.state.isUserBlocked === true ? "Unblock User" : "Block User"}
+                                </Button>
+                            </center>
+
                         </div>
 
                     </Modal>

@@ -96,16 +96,18 @@ class ChatController extends Controller
     }
     public function info(Request $request)
     {
-        $chat = Chat::find($request->chat_id);
 
+        $chat = Chat::find($request->input('chat_id'));
+        
         if (is_null($chat)) {
             return response()->json([
                 'message' => 'chat not found',
             ], 200);
         }
 
+        $members = $chat->members;
         return response()->json([
-            'info' => $chat
+            'info' => $chat,
         ], 200);
     }
     public function addMember(Request $request)
