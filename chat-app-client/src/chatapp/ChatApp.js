@@ -4,7 +4,7 @@ import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, S
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
     , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, blockUnblockUser, checkIsAllowed,
-    checkIsBlock, uppdateChatMembers
+    checkIsBlock, uppdateChatMembers,deleteChatApi
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -91,7 +91,8 @@ export default class ChatApp extends Component {
         this.updateChatMembers = this.updateChatMembers.bind(this);
 
         this.checkUserIsAdmin = this.checkUserIsAdmin.bind(this);
-
+        this.deleteChat = this.deleteChat.bind(this);
+        
         notification.config({
             placement: 'topRight',
             top: 70,
@@ -618,6 +619,26 @@ export default class ChatApp extends Component {
             });
     }
 
+    deleteChat(){
+        deleteChatApi(this.state.curChatInfo.id)
+            .then(response => {
+                notification['success']({
+                    message: 'Chat App',
+                    description: 'Chat deleted',
+                });
+
+                this.setState({
+                    publicChatModalVisib: false
+                })
+                this.loadChats()
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
+
+    }
     render() {
         var name = '';
         var phone = '';
@@ -871,7 +892,8 @@ export default class ChatApp extends Component {
 
                                 <Button
                                     disabled={!this.state.isAdmin}
-                                    style={{ width: '60%' }} type="danger" block>
+                                    style={{ width: '60%' }} type="danger" block
+                                    onClick={this.deleteChat}>
                                     Delete Chat
                             </Button>
                             </center>

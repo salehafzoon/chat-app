@@ -250,3 +250,19 @@ export function uppdateChatMembers(chatId,members) {
     });
 }
 
+export function deleteChatApi(chatId) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/delete",
+        data: {
+            'chat_id':chatId,
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+
+

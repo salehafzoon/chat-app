@@ -77,7 +77,7 @@ class ChatController extends Controller
     public function delete(Request $request)
     {
 
-        $chat = Chat::find($request->chat_id);
+        $chat = Chat::find($request->input('chat_id'));
 
         if (is_null($chat)) {
             return response()->json([
@@ -85,22 +85,19 @@ class ChatController extends Controller
             ], 200);
         }
 
-        $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
-            ->where('user_id', auth()->user()->id)
-            ->where('permission', 'ADMIN')
-            ->get();
+        //delete messages
+        DB::table('messages')->where('chat_id', $request->input('chat_id'))->delete();
 
-        if (count($res) == 0) {
-            return response()->json([
-                'message' => 'not allowed',
-            ], 403);
-        }
+        //delete members
+        DB::table('chat_user')->where('chat_id', $request->input('chat_id'))->delete();
 
+        //delete chat
         $chat->delete();
 
         return response()->json([
             'message' => 'chat deleted',
         ], 200);
+
     }
     public function info(Request $request)
     {
@@ -138,8 +135,8 @@ class ChatController extends Controller
         // $chat->members()->delete();
 
         DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
-        ->where('permission', '!=' , 'ADMIN')->delete();
-        
+            ->where('permission', '!=', 'ADMIN')->delete();
+
 
         foreach ($request->input('members') as $memberId) {
             $user = User::find($memberId);
@@ -148,7 +145,7 @@ class ChatController extends Controller
                     ->json([
                         'message' => 'user not found'
                     ], 200);
-                    
+
             $chat->members()->save($user);
         }
 
@@ -156,7 +153,6 @@ class ChatController extends Controller
             ->json([
                 'members' => $chat->members
             ], 200);
-
     }
 
     public function members(Request $request)
