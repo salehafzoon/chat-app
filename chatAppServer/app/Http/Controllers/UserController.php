@@ -20,58 +20,46 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'not found'
             ], 400);
-        
+
         return response()->json([
             'user' => $results
         ], 200);
     }
-    public function blockOrUnblockUser(Request $request)
+    public function isBlocked(Request $request)
     {
-        $blockUser = User::find($request->user_id);
-        $action = $request->action;
-        if (!($action == 'block' or $action == 'unblock')) {
-            return response()->json([
-                'message' => 'invalid action'
-            ], 200);
-        }
-        if (is_null($blockUser)) {
-            return response()->json([
-                'message' => 'user not found',
-            ], 200);
-        }
-        $user = auth()->user();
-        if ($action == 'block') {
 
-            $user->blockUsers()->attach($blockUser);
+        $isBlocked = true;
 
-            return response()->json([
-                'message' => 'user successfully blocked'
+        $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
+            ->where('user_id', $request->input('user_id'))
+            ->where('permission', 'Bloked')
+            ->get();
+
+        if (count($res) == 0)
+            $isBlocked = false;
+
+        return response()
+            ->json([
+                'is_blocked' => $isBlocked
             ], 200);
-        }
-        if ($action == 'unblock') {
-
-            $user->blockUsers()->detach($blockUser);
-
-            return response()->json([
-                'message' => 'user successfully unblocked',
-            ], 200);
-        }
     }
-    public function blockList(Request $request)
+
+    public function blockUnblock(Request $request)
     {
-        if (auth()->user()->id != $request->user_id)
+        $permission = 'ADMIN';
+        if($request->input('command')=='block')
+            $permission = 'Bloked';
 
-            return response()->json([
-                'message' => 'you are not allowed'
-            ], 504);
+        $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
+            ->where('user_id', $request->input('user_id'))
+            ->update(['permission'=>$permission]);
 
-        $user = Auth::user();
-        $user->blockUsers()->pull();
-
-        return response()->json([
-            'blocked users' => $user->blockUsers
-        ]);
+        return response()
+            ->json([
+                'message' => 'user '.$request->input('command').'ed'
+            ], 200);
     }
+    
     public function userChats(Request $request)
     {
 
@@ -111,13 +99,13 @@ class UserController extends Controller
                 ], 400);
         }
 
-        if ( $user->contacts->contains($contact)) {
+        if ($user->contacts->contains($contact)) {
             return response()
                 ->json([
                     'message' => 'contact already added'
                 ], 400);
         }
-        
+
         $user->contacts()->save($contact);
 
         return response()

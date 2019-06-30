@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
-    , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo
+    , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, isBlocked, blockUnblockUser
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -80,10 +80,9 @@ export default class ChatApp extends Component {
     handleLogout(redirectTo = "/login", notificationType = "success", description = "You're successfully logged out.") {
         localStorage.removeItem(ACCESS_TOKEN);
 
-        this.setState({
-            currentUser: null,
-            isAuthenticated: false
-        });
+        this.setState(
+            null
+        );
 
         this.props.history.replace(redirectTo);
 
@@ -353,8 +352,9 @@ export default class ChatApp extends Component {
                 })
                 if (this.state.curChatInfo.is_private) {
                     for (var member of this.state.curChatInfo.members) {
-                        if(member.id !==this.state.currentUser.id)
-                            this.checkUserIsBloked(this.state.curChat.id,member.id)
+                        console.log('user_id', this.state.currentUser.id)
+                        if (member.id !== this.state.currentUser.id)
+                            this.checkUserIsBloked(this.state.curChat.id, member.id)
                     }
                     this.setState({
                         privateChatModalVisib: true
@@ -370,8 +370,18 @@ export default class ChatApp extends Component {
                 });
             });
     }
-    checkUserIsBloked(chatId,userId){
-
+    checkUserIsBloked(chatId, userId) {
+        isBlocked(chatId, userId)
+            .then(response => {
+                this.setState({
+                    isUserBlocked: response.data.is_blocked
+                })
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
     }
     handlePrivChatCancel() {
         this.setState({
@@ -384,7 +394,38 @@ export default class ChatApp extends Component {
         });
     }
     blockOrUnblockUser() {
-
+        var blockId;
+        var command = 'block';
+        for (var member of this.state.curChatInfo.members) {
+            if (member.id !== this.state.currentUser.id)
+                blockId =member.id 
+        }
+        if(this.state.isUserBlocked)
+            command = 'unblock'
+        
+        console.log(this.state.curChatInfo.id, blockId, command)
+        
+        blockUnblockUser(this.state.curChatInfo.id, blockId, command)
+            .then(response => {
+                if (command === 'block')
+                    this.setState({
+                        isUserBlocked: true
+                    })
+                else
+                    this.setState({
+                        isUserBlocked: false
+                    })
+                notification['success']({
+                    message: 'Chat App',
+                    description: 'User '+command +'ed',
+                });
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
+        
     }
     render() {
         var name = '';
@@ -535,9 +576,9 @@ export default class ChatApp extends Component {
                             <Avatar
                                 visibility={this.state.userFounded ? "visible" : "hidden"}
                                 size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
-                                <h2>{this.state.userFounded ? this.state.searchedUser.name[0] : ""}</h2>
+                                <h2>{this.state.searchedUser.name !== undefined ? this.state.searchedUser.name[0] : ""}</h2>
                             </Avatar>
-                            <span>{this.state.userFounded ? this.state.searchedUser.name : ''}</span>
+                            <span>{this.state.searchedUser.name !== undefined ? this.state.searchedUser.name : ''}</span>
 
                         </center>
 
