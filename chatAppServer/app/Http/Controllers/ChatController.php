@@ -20,9 +20,10 @@ class ChatController extends Controller
         $chat->is_private = $request->input('isPrivate');
         $chat->is_channel = $request->input('isChannel');
 
+        
         $others = array();
 
-        if (count($request->input('others')) != 1) {
+        if (!$chat->is_private) {
 
             foreach ($request->input('others') as $uid) {
 
@@ -39,12 +40,22 @@ class ChatController extends Controller
             $chat->save();
             $chat->members()->save($user);
 
-            DB::table('chat_user')
-                ->where('user_id', $user->id)
-                ->where('chat_id', $chat->id)
-                ->update(['permission' => "ADMIN"]);
-
             $chat->members()->saveMany($others);
+
+            if ($chat->is_channel==1) {
+                foreach ($others as $other) {
+                    DB::table('chat_user')
+                        ->where('user_id', $other->id)
+                        ->where('chat_id', $chat->id)
+                        ->update(['permission' => "NOT_ALLOWED"]);
+                }
+            }
+            
+            DB::table('chat_user')
+                        ->where('user_id', $user->id)
+                        ->where('chat_id', $chat->id)
+                        ->update(['permission' => "ADMIN"]);
+
         } else {
 
             $other = User::find($request->input('others')[0]);
@@ -58,8 +69,6 @@ class ChatController extends Controller
             $chat->save();
             $chat->members()->save($user);
             $chat->members()->save($other);
-
-            DB::table('chat_user')->where('chat_id', $chat->id)->update(['permission' => "ADMIN"]);
         }
 
         return response()->json([
@@ -98,12 +107,18 @@ class ChatController extends Controller
     {
 
         $chat = Chat::find($request->input('chat_id'));
-        
+
         if (is_null($chat)) {
             return response()->json([
                 'message' => 'chat not found',
             ], 200);
         }
+
+        if ($chat->is_private)
+            foreach ($chat->members as $member) {
+                if ($member->id != auth()->user()->id)
+                    $chat->name = $member->name;
+            }
 
         $members = $chat->members;
         return response()->json([
@@ -197,6 +212,35 @@ class ChatController extends Controller
         ], 200);
     }
 
+    public function isAllowed(Request $request)
+    {
+
+        $chat = Chat::find($request->chat_id);
+
+        if (is_null($chat))
+            return response()->json([
+                'message' => 'chat not found',
+            ], 200);
+
+        if (!$chat->members->contains(auth()->user()))
+            return response()->json([
+                'message' => 'not allowed',
+            ], 403);
+
+        $isAllowed = true;
+
+        $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
+            ->where('user_id', auth()->user()->id)
+            ->where('permission', 'NOT_ALLOWED')
+            ->get();
+
+        if (count($res) != 0)
+            $isAllowed = false;
+
+        return response()->json([
+            'is_allowed' => $isAllowed,
+        ], 200);
+    }
     public function isAdmin(Request $request)
     {
 

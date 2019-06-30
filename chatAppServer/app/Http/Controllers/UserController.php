@@ -32,7 +32,7 @@ class UserController extends Controller
 
         $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
             ->where('user_id', $request->input('user_id'))
-            ->where('permission', 'Bloked')
+            ->where('permission', 'NOT_ALLOWED')
             ->get();
 
         if (count($res) == 0)
@@ -46,9 +46,10 @@ class UserController extends Controller
 
     public function blockUnblock(Request $request)
     {
-        $permission = 'ADMIN';
+        $permission = 'ALLOWED';
+
         if($request->input('command')=='block')
-            $permission = 'Bloked';
+            $permission = 'NOT_ALLOWED';
 
         $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
             ->where('user_id', $request->input('user_id'))

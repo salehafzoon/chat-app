@@ -25,7 +25,7 @@ class Login extends Component {
 
     handleLogin() {
         notification.success({
-            message: 'Polling App',
+            message: 'Chat App',
             description: "You're successfully logged in.",
         });
 
@@ -79,6 +79,10 @@ class LoginForm extends Component {
                         this.props.onLogin();
 
                     }).catch(error => {
+                        notification.error({
+                            message: 'Chat App',
+                            description: error.message,
+                        });
                         console.log(error.message);
                         this.setState({
                             disabledBtn: false

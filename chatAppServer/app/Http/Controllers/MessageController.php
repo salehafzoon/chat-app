@@ -27,7 +27,7 @@ class MessageController extends Controller
         if($chat->is_private == 1 or $chat->is_channel == 1 ){
             $res = DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
                 ->where('user_id', auth()->user()->id)
-                ->where('permission', 'ADMIN')
+                ->where('permission', 'ALLOWED')->orWhere('permission', 'ADMIN')
                 ->get();
 
             if (count($res)==0) {

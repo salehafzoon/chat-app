@@ -155,6 +155,38 @@ export function checkIsAdmin(chatId) {
         }
     });
 }
+export function checkIsAllowed(chatId) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/is_allowed",
+        data: {
+            'chat_id': chatId,
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+
+
+export function checkIsBlock(chatId,userId) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/user/is_block",
+        data: {
+            'chat_id': chatId,
+            'user_id':userId
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+
 
 export function sendMessageApi(chatId,message) {
 
@@ -178,22 +210,6 @@ export function getChatInfo(chatId) {
         url: API_BASE_URL + "/chat/info",
         data: {
             'chat_id':chatId,
-        },
-        headers: {
-            'content-type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
-        }
-    });
-}
-
-export function isBlocked(chatId,userId) {
-
-    return axios({
-        method: 'post',
-        url: API_BASE_URL + "/user/is_block",
-        data: {
-            'chat_id':chatId,
-            'user_id':userId
         },
         headers: {
             'content-type': 'application/json',

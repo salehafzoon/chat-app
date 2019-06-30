@@ -3,7 +3,8 @@ import 'antd/dist/antd.css';
 import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
-    , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, isBlocked, blockUnblockUser
+    , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, blockUnblockUser, checkIsAllowed,
+    checkIsBlock
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -37,11 +38,14 @@ export default class ChatApp extends Component {
             others: [],
             selectedChatName: '',
             curChat: null,
-            isAdmin: true,
+            isAdmin: false,
+            isAllowed: false,
             curChatInfo: null,
             privateChatModalVisib: false,
             publicChatModalVisib: false,
             isUserBlocked: false,
+            newConvModalVisib: false,
+            newConvName: null,
 
         }
 
@@ -69,6 +73,12 @@ export default class ChatApp extends Component {
 
         this.blockOrUnblockUser = this.blockOrUnblockUser.bind(this);
         this.checkUserIsBloked = this.checkUserIsBloked.bind(this);
+
+        this.openNewConvModal = this.openNewConvModal.bind(this);
+        this.handleNewConvOk = this.handleNewConvOk.bind(this);
+        this.handleNewConvCancel = this.handleNewConvCancel.bind(this);
+
+
 
         notification.config({
             placement: 'topRight',
@@ -126,10 +136,10 @@ export default class ChatApp extends Component {
             curChat: chat
         })
 
-        checkIsAdmin(chat.id)
+        checkIsAllowed(chat.id)
             .then(response => {
                 this.setState({
-                    isAdmin: response.data.is_admin,
+                    isAllowed: response.data.is_allowed,
                     isLoading: false
                 });
             }).catch(error => {
@@ -151,7 +161,6 @@ export default class ChatApp extends Component {
                         message.own = true
                     else
                         message.own = null;
-                    // console.log(message);
                 }
 
             }).catch(error => {
@@ -194,8 +203,6 @@ export default class ChatApp extends Component {
                     description: 'server has problem',
                 });
             });
-
-
     }
     handleNewChatCancel = () => {
         console.log('Clicked cancel button');
@@ -301,7 +308,7 @@ export default class ChatApp extends Component {
     handleSelectContactChange(value) {
 
         this.setState({
-            others: value
+            others: value,
         })
         console.log(this.state.others);
     }
@@ -350,11 +357,18 @@ export default class ChatApp extends Component {
                 this.setState({
                     curChatInfo: response.data.info
                 })
+                console.log('chatid', this.state.curChat.id)
+
+                console.log('chatinfo', this.state.curChatInfo)
+
                 if (this.state.curChatInfo.is_private) {
                     for (var member of this.state.curChatInfo.members) {
-                        console.log('user_id', this.state.currentUser.id)
-                        if (member.id !== this.state.currentUser.id)
+
+                        if (member.id !== this.state.currentUser.id) {
                             this.checkUserIsBloked(this.state.curChat.id, member.id)
+                            console.log('member_id', member.id, 'member_name', member.name)
+
+                        }
                     }
                     this.setState({
                         privateChatModalVisib: true
@@ -371,7 +385,7 @@ export default class ChatApp extends Component {
             });
     }
     checkUserIsBloked(chatId, userId) {
-        isBlocked(chatId, userId)
+        checkIsBlock(chatId, userId)
             .then(response => {
                 this.setState({
                     isUserBlocked: response.data.is_blocked
@@ -398,13 +412,13 @@ export default class ChatApp extends Component {
         var command = 'block';
         for (var member of this.state.curChatInfo.members) {
             if (member.id !== this.state.currentUser.id)
-                blockId =member.id 
+                blockId = member.id
         }
-        if(this.state.isUserBlocked)
+        if (this.state.isUserBlocked)
             command = 'unblock'
-        
+
         console.log(this.state.curChatInfo.id, blockId, command)
-        
+
         blockUnblockUser(this.state.curChatInfo.id, blockId, command)
             .then(response => {
                 if (command === 'block')
@@ -417,7 +431,7 @@ export default class ChatApp extends Component {
                     })
                 notification['success']({
                     message: 'Chat App',
-                    description: 'User '+command +'ed',
+                    description: 'User ' + command + 'ed',
                 });
             }).catch(error => {
                 notification['error']({
@@ -425,8 +439,61 @@ export default class ChatApp extends Component {
                     description: 'server has problem',
                 });
             });
-        
+
     }
+    openNewConvModal() {
+        this.loadContacts();
+        this.setState({
+            newConvModalVisib: true,
+            others: []
+        })
+    }
+    handleNewConvCancel() {
+        this.setState({
+            newConvModalVisib: false,
+            searchedUser: ''
+        });
+    }
+    handleNewConvOk() {
+        
+        let name;
+        
+        for (var contact of this.state.contacts) {
+            if (contact.id == this.state.others[0])
+                name = contact.name
+        }
+
+        let creatConvReq = {
+            'name':name,
+            'others': this.state.others,
+            'isPrivate': true,
+            'isChannel': false
+        }
+        console.log('creatConvReq', creatConvReq);
+
+        createChatApi(creatConvReq)
+            .then(response => {
+                this.setState({
+                    newChatName: '',
+                    others: [],
+                    newConvModalVisib: false,
+                });
+                notification['success']({
+                    message: 'Chat App',
+                    description: 'Conversion created',
+                });
+                this.loadChats();
+
+            }).catch(error => {
+
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
+
+    }
+
     render() {
         var name = '';
         var phone = '';
@@ -493,7 +560,7 @@ export default class ChatApp extends Component {
 
                             <Search
                                 className='message-inp'
-                                disabled={this.state.isAdmin ? false : true}
+                                disabled={this.state.isAllowed ? false : true}
                                 placeholder="message"
                                 enterButton="send"
                                 onSearch={value => this.sendMessage(value)}
@@ -518,7 +585,7 @@ export default class ChatApp extends Component {
                                 className="command-menu">
 
                                 <Menu.Item key="1"
-                                    onClick={(event) => this.handleLogout()}>
+                                    onClick={(event) => this.openNewConvModal()}>
                                     <span>
                                         <Icon type="message" />
                                         <span>New conversion</span>
@@ -627,6 +694,31 @@ export default class ChatApp extends Component {
                                     onClick={this.blockOrUnblockUser}>
                                     {this.state.isUserBlocked === true ? "Unblock User" : "Block User"}
                                 </Button>
+                            </center>
+
+                        </div>
+
+                    </Modal>
+
+                    <Modal
+                        title="New Conversion"
+                        visible={this.state.newConvModalVisib}
+                        onOk={this.handleNewConvOk}
+                        confirmLoading={this.state.confirmLoading}
+                        onCancel={this.handleNewConvCancel}
+                    >
+                        <div>
+
+                            <center>
+                                <h4>{'Select contact'}</h4>
+                                <Select
+                                    mode="single"
+                                    style={{ width: '60%' }}
+                                    placeholder="select Contact"
+                                    onChange={this.handleSelectContactChange}
+                                >
+                                    {this.state.contactNames}
+                                </Select>
                             </center>
 
                         </div>

@@ -21,7 +21,7 @@ class CreateChatsTable extends Migration
 
         Schema::create('chat_user', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('permission')->default('MEMBER');
+            $table->string('permission')->default('ALLOWED');
         
             $table->integer('user_id')->unsigned()->index();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

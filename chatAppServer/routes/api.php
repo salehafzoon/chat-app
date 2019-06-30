@@ -13,6 +13,7 @@ Route::group(['middleware' => ['jwt.verify']], function () {
 
     Route::post('user/block_unblock', 'UserController@blockUnblock');
     Route::post('user/is_block', 'UserController@isBlocked'); 
+    
     Route::get('user/contact', 'UserController@userContacts');
     Route::post('user/contact/add', 'UserController@userAddContact');
 
@@ -23,7 +24,8 @@ Route::group(['middleware' => ['jwt.verify']], function () {
     Route::post('/chat/delete', 'ChatController@delete');
     Route::post('/chat/info', 'ChatController@info');
     Route::post('/chat/is_admin', 'ChatController@isAdmin');
-
+    Route::post('/chat/is_allowed', 'ChatController@isAllowed');
+    
     Route::post('/chat/member/add', 'ChatController@addMember');
     Route::post('/chat/member/delete', 'ChatController@deleteMember');
     Route::get('/chat/member', 'ChatController@members');
