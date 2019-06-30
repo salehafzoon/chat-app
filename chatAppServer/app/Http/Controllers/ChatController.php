@@ -20,7 +20,7 @@ class ChatController extends Controller
         $chat->is_private = $request->input('isPrivate');
         $chat->is_channel = $request->input('isChannel');
 
-        
+
         $others = array();
 
         if (!$chat->is_private) {
@@ -42,7 +42,7 @@ class ChatController extends Controller
 
             $chat->members()->saveMany($others);
 
-            if ($chat->is_channel==1) {
+            if ($chat->is_channel == 1) {
                 foreach ($others as $other) {
                     DB::table('chat_user')
                         ->where('user_id', $other->id)
@@ -50,12 +50,11 @@ class ChatController extends Controller
                         ->update(['permission' => "NOT_ALLOWED"]);
                 }
             }
-            
-            DB::table('chat_user')
-                        ->where('user_id', $user->id)
-                        ->where('chat_id', $chat->id)
-                        ->update(['permission' => "ADMIN"]);
 
+            DB::table('chat_user')
+                ->where('user_id', $user->id)
+                ->where('chat_id', $chat->id)
+                ->update(['permission' => "ADMIN"]);
         } else {
 
             $other = User::find($request->input('others')[0]);
@@ -125,71 +124,39 @@ class ChatController extends Controller
             'info' => $chat,
         ], 200);
     }
-    public function addMember(Request $request)
+    public function uppdateMember(Request $request)
     {
 
-        $chat = Chat::find($request->chat_id);
-        $user = User::find($request->user_id);
+        $chat = Chat::find($request->input('chat_id'));
 
-        if (is_null($chat) or is_null($user)) {
+        if (is_null($chat)) {
             return response()->json([
-                'message' => 'chat or user not found',
+                'message' => 'chat not found',
             ], 200);
         }
 
-        $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
-            ->where('user_id', auth()->user()->id)
-            ->where('permission', 'ADMIN')
-            ->get();
+        // $chat->members()->delete();
 
-        if (count($res) == 0) {
-            return response()->json([
-                'message' => 'not allowed',
-            ], 403);
+        DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
+        ->where('permission', '!=' , 'ADMIN')->delete();
+        
+
+        foreach ($request->input('members') as $memberId) {
+            $user = User::find($memberId);
+            if (is_null($user))
+                return response()
+                    ->json([
+                        'message' => 'user not found'
+                    ], 200);
+                    
+            $chat->members()->save($user);
         }
-
-        if ($chat->members->contains($user))
-            return response()->json([
-                'message' => 'user is already a member',
-            ], 200);
-
-        $chat->members()->save($user);
 
         return response()
             ->json([
-                'message' => 'member added'
+                'members' => $chat->members
             ], 200);
-    }
 
-    public function deleteMember(Request $request)
-    {
-
-        $chat = Chat::find($request->chat_id);
-        $user = User::find($request->user_id);
-
-        if (is_null($chat) or is_null($user)) {
-            return response()->json([
-                'message' => 'chat or user not found',
-            ], 200);
-        }
-
-        $res = DB::table('chat_user')->where('chat_id', $request->chat_id)
-            ->where('user_id', auth()->user()->id)
-            ->where('permission', 'ADMIN')
-            ->get();
-
-        if (count($res) == 0) {
-            return response()->json([
-                'message' => 'not allowed',
-            ], 403);
-        }
-
-        DB::table('chat_user')->where('chat_id', $chat->id)->where('user_id', $user->id)->delete();
-
-        return response()
-            ->json([
-                'message' => 'member deleted'
-            ], 200);
     }
 
     public function members(Request $request)

@@ -170,7 +170,6 @@ export function checkIsAllowed(chatId) {
     });
 }
 
-
 export function checkIsBlock(chatId,userId) {
 
     return axios({
@@ -187,7 +186,6 @@ export function checkIsBlock(chatId,userId) {
     });
 }
 
-
 export function sendMessageApi(chatId,message) {
 
     return axios({
@@ -203,6 +201,7 @@ export function sendMessageApi(chatId,message) {
         }
     });
 }
+
 export function getChatInfo(chatId) {
 
     return axios({
@@ -217,6 +216,7 @@ export function getChatInfo(chatId) {
         }
     });
 }
+
 export function blockUnblockUser(chatId,userId,command) {
 
     return axios({
@@ -233,3 +233,20 @@ export function blockUnblockUser(chatId,userId,command) {
         }
     });
 }
+
+export function uppdateChatMembers(chatId,members) {
+
+    return axios({
+        method: 'post',
+        url: API_BASE_URL + "/chat/member/update",
+        data: {
+            'chat_id':chatId,
+            'members':members,
+        },
+        headers: {
+            'content-type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem(ACCESS_TOKEN)
+        }
+    });
+}
+

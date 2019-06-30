@@ -108,6 +108,7 @@ class UserController extends Controller
         }
 
         $user->contacts()->save($contact);
+        $contact->contacts()->save($user);
 
         return response()
             ->json([

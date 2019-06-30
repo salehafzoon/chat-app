@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import 'antd/dist/antd.css';
-import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select } from 'antd';
+import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, Select, TreeSelect } from 'antd';
 import {
     getCurrentUser, loadUserChats, loadChatMessages, searchUser, addContact, loadUserContacts
     , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, blockUnblockUser, checkIsAllowed,
-    checkIsBlock
+    checkIsBlock, uppdateChatMembers
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,6 +14,9 @@ const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
 const { Search } = Input;
 const { Option } = Select;
+
+const { SHOW_PARENT } = TreeSelect;
+
 
 export default class ChatApp extends Component {
     constructor(props) {
@@ -46,6 +49,8 @@ export default class ChatApp extends Component {
             isUserBlocked: false,
             newConvModalVisib: false,
             newConvName: null,
+            treeProps: {},
+            newMembers: []
 
         }
 
@@ -78,7 +83,14 @@ export default class ChatApp extends Component {
         this.handleNewConvOk = this.handleNewConvOk.bind(this);
         this.handleNewConvCancel = this.handleNewConvCancel.bind(this);
 
+        this.handlePublicChatInfoOk = this.handlePublicChatInfoOk.bind(this);
+        this.handlePublicChatInfoCancel = this.handlePublicChatInfoCancel.bind(this);
 
+        this.preparePublicModal = this.preparePublicModal.bind(this);
+
+        this.updateChatMembers = this.updateChatMembers.bind(this);
+
+        this.checkUserIsAdmin = this.checkUserIsAdmin.bind(this);
 
         notification.config({
             placement: 'topRight',
@@ -251,7 +263,6 @@ export default class ChatApp extends Component {
         });
     };
     loadContacts() {
-
         loadUserContacts()
             .then(response => {
 
@@ -269,8 +280,7 @@ export default class ChatApp extends Component {
                     this.state.contactNames.push(<Option key={contact.id.toString(36)}>{contact.name}</Option>)
                 }
 
-                console.log(this.state.contacts)
-                console.log("names", this.state.contactNames)
+                console.log('geting contacts');
 
             }).catch(error => {
                 notification['error']({
@@ -279,6 +289,88 @@ export default class ChatApp extends Component {
                 });
             });
     }
+
+    updateMember = value => {
+        this.setState({
+            newMembers: value
+        })
+        console.log('onChange ', value);
+    }
+
+    checkUserIsAdmin() {
+        checkIsAdmin(this.state.curChatInfo.id)
+            .then(response => {
+
+                this.setState({
+                    isAdmin: response.data.is_admin,
+                    publicChatModalVisib: true
+                });
+
+                console.log(this.state.isAdmin)
+            }).catch(error => {
+
+                notification['info']({
+                    message: 'Chat App',
+                    description: 'user not found',
+                });
+            });
+    }
+
+    preparePublicModal() {
+        loadUserContacts()
+            .then(response => {
+
+                this.setState({
+                    contacts: [],
+                })
+
+                this.setState({
+                    contacts: response.data.contacts,
+                });
+
+                let values = []
+                let treeData = []
+
+                for (let member of this.state.curChatInfo.members) {
+                    values.push(member.id)
+                }
+
+                for (let contact of this.state.contacts) {
+                    treeData.push({
+                        title: contact.name,
+                        value: contact.id,
+                        key: contact.id
+                    })
+                }
+
+                // console.log(values)
+                // console.log(treeData)
+
+                const tProps = {
+                    treeData,
+                    defaultValue: values,
+                    onChange: this.updateMember,
+                    treeCheckable: true,
+                    style: {
+                        width: 300,
+                    },
+                };
+
+                this.setState({
+                    treeProps: tProps,
+                })
+
+                //check is admin
+                this.checkUserIsAdmin()
+
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server problem',
+                });
+            });
+    }
+
     updateChatName(event) {
         this.setState({
             newChatName: event.target.value
@@ -310,7 +402,7 @@ export default class ChatApp extends Component {
         this.setState({
             others: value,
         })
-        console.log(this.state.others);
+        console.log(this.others);
     }
     openAddContactModal() {
         this.setState({
@@ -357,12 +449,9 @@ export default class ChatApp extends Component {
                 this.setState({
                     curChatInfo: response.data.info
                 })
-                console.log('chatid', this.state.curChat.id)
-
-                console.log('chatinfo', this.state.curChatInfo)
 
                 if (this.state.curChatInfo.is_private) {
-                    for (var member of this.state.curChatInfo.members) {
+                    for (let member of this.state.curChatInfo.members) {
 
                         if (member.id !== this.state.currentUser.id) {
                             this.checkUserIsBloked(this.state.curChat.id, member.id)
@@ -373,11 +462,11 @@ export default class ChatApp extends Component {
                     this.setState({
                         privateChatModalVisib: true
                     })
-                } else
-                    this.setState({
-                        publicChatModalVisib: true
-                    })
+                } else {
+                    this.preparePublicModal()
+                }
             }).catch(error => {
+                console.log(error)
                 notification['error']({
                     message: 'Chat App',
                     description: 'server has problem',
@@ -455,16 +544,16 @@ export default class ChatApp extends Component {
         });
     }
     handleNewConvOk() {
-        
+
         let name;
-        
+
         for (var contact of this.state.contacts) {
             if (contact.id == this.state.others[0])
                 name = contact.name
         }
 
         let creatConvReq = {
-            'name':name,
+            'name': name,
             'others': this.state.others,
             'isPrivate': true,
             'isChannel': false
@@ -492,6 +581,41 @@ export default class ChatApp extends Component {
                 });
             });
 
+    }
+
+    handlePublicChatInfoOk() {
+        this.setState({
+            publicChatModalVisib: false,
+        });
+    }
+    handlePublicChatInfoCancel() {
+        this.setState({
+            publicChatModalVisib: false,
+        });
+    }
+
+    updateChatMembers() {
+
+        console.log(this.state.curChatInfo.id,
+            this.state.newMembers)
+
+        uppdateChatMembers(this.state.curChatInfo.id,
+            this.state.newMembers)
+            .then(response => {
+                notification['success']({
+                    message: 'Chat App',
+                    description: 'Chat members updated',
+                });
+
+                this.setState({
+                    publicChatModalVisib: false
+                })
+            }).catch(error => {
+                notification['error']({
+                    message: 'Chat App',
+                    description: 'server has problem',
+                });
+            });
     }
 
     render() {
@@ -725,6 +849,36 @@ export default class ChatApp extends Component {
 
                     </Modal>
 
+                    <Modal
+                        title="Chat info"
+                        visible={this.state.publicChatModalVisib}
+                        onOk={this.handlePublicChatInfoOk}
+                        onCancel={this.handlePublicChatInfoCancel}
+                    >
+                        <div>
+                            <center>
+                                <h2>{this.state.curChatInfo != null ? this.state.curChatInfo.name : ''}</h2>
+                                <h4>Members</h4>
+
+                                <TreeSelect {...this.state.treeProps} />
+
+                                <Button
+                                    disabled={!this.state.isAdmin}
+                                    style={{ width: '60%' }} type="primary" block
+                                    onClick={this.updateChatMembers}>
+                                    Update Members
+                            </Button>
+
+                                <Button
+                                    disabled={!this.state.isAdmin}
+                                    style={{ width: '60%' }} type="danger" block>
+                                    Delete Chat
+                            </Button>
+                            </center>
+
+                        </div>
+
+                    </Modal>
                 </Layout>
 
 
