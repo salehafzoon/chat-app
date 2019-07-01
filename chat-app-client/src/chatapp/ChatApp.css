@@ -22,6 +22,7 @@
     color: whitesmoke;
     text-align: center;
     position: relative;
+    background-color: #004d99
 }
 .profile-pannel{
     background-color: #394a60;
@@ -43,6 +44,7 @@
     background-color: aliceblue;
     padding: 0%;
     margin: 0%;
+    text-align: left;
 }
 .other-mess{
     color: black;
@@ -93,8 +95,8 @@
 
 .chat-item{
     padding: 15px;
-    border-bottom: 10px solid white;
-    border-top :1px solid white;
+    border-bottom: 3px solid #3fc0ef;
+    /* border-top :2px solid #3fc0ef; */
 }
 
 .chat-panel{

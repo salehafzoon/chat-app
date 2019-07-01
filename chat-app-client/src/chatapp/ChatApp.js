@@ -688,7 +688,7 @@ export default class ChatApp extends Component {
         return (
             <div className="container">
                 <Layout className="content">
-                    <Header><h2 className="app-title">Chat App</h2></Header>
+                    <Header className="app-title"><h2 style={{color:'white'}}>Chat App</h2></Header>
                     <Layout className='layout'>
 
                         <Sider
@@ -717,7 +717,7 @@ export default class ChatApp extends Component {
                         </Sider>
 
                         <Layout style={{ position: 'relative' }}>
-                            <Header style={{ position: "fixed", width: '42.6%', zIndex: 1 }}>
+                            <Header style={{ backgroundColor:'#17212b',position: "fixed", width: '42.6%', zIndex: 1 }}>
                                 <div>
                                     <center>
                                         <span style={{ color: "white", fontSize: 18 }}>
