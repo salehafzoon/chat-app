@@ -1,24 +1,41 @@
 .container{
     padding: 3%;
-    width: 100%;
+    width: 100vw;
+    margin-top: -50px;
+    text-align: center;
 }
 .content{
-    margin: auto;
+    /* margin: auto;  */
+
+    /* width: 100vh */
+}
+.layout{
+    /* width: 100vh */
     
-    width: 100%;
 }
 .aside{
     widows: 400px;;
 }
 .app-title{
     color: whitesmoke;
-    text-align: center
+    text-align: center;
+    position: relative;
 }
 .profile-pannel{
-    
-    background-color: aliceblue;
-    padding: 0%;
-    margin: 0%;
+    background-color: #394a60;
+    padding: 10px;
+    text-align: center;
+    border-bottom: 3px solid dimgray;
+}
+.name-style{
+    color: #3fc0ef;
+    text-align: center;
+    padding: 1px;
+}
+.white-txt{
+    color: white;
+    text-align: center;
+    padding: 1px;
 }
 .command-menu{
     background-color: aliceblue;
@@ -55,6 +72,7 @@
     border-radius: 10px;
 }
 .chat_title{
+    position: absolute;
     color: white;
     font-size: 1.5em;
     text-align: center;
@@ -64,23 +82,33 @@
 .chat-back{
     height: 300px;
 }
-.chat_title-panel{
-    position: fixed;
-    background-color: #004d99;
-    width: 36.5%;
-    padding: 5px;
-    z-index: 1;
-}
 .message-inp{
     position: fixed;
     bottom: 0;
-    width: 36.5%;
+    width: 100%;
     margin-bottom: 65px;
 }
-.chat_view{
+
+.chat-item{
+    padding: 15px;
+    border-bottom: 10px solid white;
+    border-top :1px solid white;
+}
+
+.chat-panel{
     position: relative;
+    /* display: flex;
+    flex-direction: column; */
+
+}
+.chat-panel-title{
+    position: fixed;
+    background-color: #004d99;
+    z-index: 1;
+}
+.chat-view{
     top: 50px;
 }
-.chat_panel{
-    /* position: relative; */
+.message-inp{
+    position: fixed;
 }

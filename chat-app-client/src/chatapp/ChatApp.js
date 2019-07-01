@@ -4,11 +4,12 @@ import { Avatar, Input, Button, Icon, notification, Layout, Menu, List, Modal, S
 import {
     getCurrentUser, loadUserChats, loadChatMessagesApi, searchUser, addContact, loadUserContacts
     , createChatApi, checkIsAdmin, sendMessageApi, getChatInfo, blockUnblockUser, checkIsAllowed,
-    checkIsBlock, uppdateChatMembers,deleteChatApi
+    checkIsBlock, uppdateChatMembers, deleteChatApi
 } from '../util/APIUtils'
 import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
+import { COLORS } from '../constants'
 
 const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
@@ -92,7 +93,7 @@ export default class ChatApp extends Component {
 
         this.checkUserIsAdmin = this.checkUserIsAdmin.bind(this);
         this.deleteChat = this.deleteChat.bind(this);
-        
+
         notification.config({
             placement: 'topRight',
             top: 70,
@@ -197,16 +198,16 @@ export default class ChatApp extends Component {
 
                 await this.loadCurrentUser();
                 await this.loadChats();
-                if(this.state.curChat !=null){
+                if (this.state.curChat != null) {
                     console.log(this.state.curChat)
                     await this.loadChatMessages(this.state.curChat)
                 }
 
                 console.log('update')
-            }, 4000);
-          } catch(e) {
+            }, 3000);
+        } catch (e) {
             console.log(e);
-          }
+        }
     }
     handleNewChatOk = () => {
 
@@ -641,7 +642,7 @@ export default class ChatApp extends Component {
             });
     }
 
-    deleteChat(){
+    deleteChat() {
         deleteChatApi(this.state.curChatInfo.id)
             .then(response => {
                 notification['success']({
@@ -676,75 +677,84 @@ export default class ChatApp extends Component {
             <div className="container">
                 <Layout className="content">
                     <Header><h2 className="app-title">Chat App</h2></Header>
-                    <Layout>
+                    <Layout className='layout'>
 
                         <Sider
-                            theme='light'>
+                            theme='dark'>
                             <List
                                 itemLayout="horizontal"
                                 dataSource={this.state.chats}
                                 renderItem={item => (
                                     <List.Item
+                                        className={'chat-item'}
                                         onClick={(event) => this.loadChatMessages(item)}>
                                         <List.Item.Meta
                                             avatar={
-                                                <Avatar size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
-                                                    <h2>{item.name[0]}</h2>
+                                                <Avatar size={50} style={{
+                                                    backgroundColor:
+                                                        COLORS[Math.floor(Math.random() * Math.floor(4))]
+                                                }}>
+                                                    <h2 style={{ color: 'white' }}>{item.name[0]}</h2>
                                                 </Avatar>
                                             }
-                                            title={item.name}
+                                            title={<h3 style={{ marginTop: 14, color: 'white', marginRight: 28 }}>{item.name}</h3>}
                                         />
                                     </List.Item>
                                 )}
                             />
                         </Sider>
 
-                        <Content className='chat_panel'>
-                            <div className='chat_title-panel'>
-                                <center>
-                                    <span className='chat_title'>{this.state.selectedChatName}</span>
-                                    <Button type="primary" shape="circle" icon="more"
-                                        onClick={this.showChatInfo} />
-                                </center>
-                            </div>
+                        <Layout style = {{position:'relative'}}>
+                            <Header style={{ position: "fixed", width: '42.6%', zIndex: 1 }}>
+                                <div>
+                                    <center>
+                                        <span>{this.state.selectedChatName}</span>
+                                        <Button type="primary" shape="circle" icon="more"
+                                            onClick={this.showChatInfo} />
+                                    </center>
+                                </div>
+                            </Header>
+                            <Content>
 
-                            <div className='chat_view'>
-                                <List
-                                    className='chat-back'
-                                    itemLayout="horizontal"
-                                    dataSource={this.state.messages}
-                                    renderItem={item => (
-                                        <List.Item
-                                            className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
-                                        >
-                                            <List.Item.Meta
-                                                title={<span>{item.content}</span>}
-                                            />
-                                        </List.Item>
-                                    )}
-                                />
-                            </div>
+                                <div className='chat-view'>
+                                    <List
+                                        className='chat-back'
+                                        itemLayout="horizontal"
+                                        dataSource={this.state.messages}
+                                        renderItem={item => (
+                                            <List.Item
+                                                className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
+                                            >
+                                                <List.Item.Meta
+                                                    title={<span>{item.content}</span>}
+                                                />
+                                            </List.Item>
+                                        )}
+                                    />
+                                </div>
 
-                            <Search
-                                className='message-inp'
-                                disabled={this.state.isAllowed ? false : true}
-                                placeholder="message"
-                                enterButton="send"
-                                onSearch={value => this.sendMessage(value)}
-                            />
-
-                        </Content>
-
+                            </Content>
+                            <Footer  style={{ position: 'fixed',bottom:'12%',zIndex: 1 ,width:'42.6%'}}>
+                                <div style={{padding:0,margin:0,}}>
+                                    <Search
+                                        disabled={this.state.isAllowed ? false : true}
+                                        placeholder="message"
+                                        enterButton="send"
+                                        onSearch={value => this.sendMessage(value)}
+                                    />
+                                </div>
+                            </Footer>
+                        </Layout>
+                       
                         <Sider>
 
                             <div className="profile-pannel">
                                 <span>
-                                    <span>{name}</span>
-                                    <Avatar size={50} style={{ backgroundColor: 'black' }} icon="user" />
+                                    <Avatar size={70} style={{ backgroundColor: 'black' }} icon="user" />
                                 </span>
-
-                                <h5>{phone}</h5>
-                                <h5>{email}</h5>
+                                <h3 className='name-style'>{name}</h3>
+                                <h5 className='white-txt'>{phone}</h5>
+                                <h5 className='white-txt'>{email}</h5>
                             </div>
 
                             <Menu
@@ -754,15 +764,15 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="1"
                                     onClick={(event) => this.openNewConvModal()}>
                                     <span>
-                                        <Icon type="message" style={{ fontSize: '30px'}}/>
-                                        <span>New conversion</span>
+                                        <Icon type="message" style={{ padding: 8, fontSize: '25px', color: '#17212b' }} />
+                                        <span style={{}}>New conversion</span>
                                     </span>
                                 </Menu.Item>
 
                                 <Menu.Item key="2"
                                     onClick={(event) => this.openAddContactModal()}>
                                     <span>
-                                        <Icon type="user-add" />
+                                        <Icon type="user-add" style={{ padding: 8, fontSize: '25px', color: '#17212b' }} />
                                         <span>Add Contact</span>
                                     </span>
                                 </Menu.Item>
@@ -770,7 +780,7 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="3"
                                     onClick={(event) => this.openNewGroupModal()}>
                                     <span>
-                                        <Icon type="usergroup-add" />
+                                        <Icon type="usergroup-add" style={{ padding: 8, fontSize: '25px', color: '#17212b' }} />
                                         <span>New group</span>
                                     </span>
                                 </Menu.Item>
@@ -778,7 +788,7 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="4"
                                     onClick={(event) => this.openNewChannelModal()}>
                                     <span>
-                                        <Icon type="sound" />
+                                        <Icon type="sound" style={{ padding: 8, fontSize: '25px', color: '#17212b' }} />
                                         <span>New Chennel</span>
                                     </span>
                                 </Menu.Item>
@@ -786,7 +796,7 @@ export default class ChatApp extends Component {
                                 <Menu.Item key="5"
                                     onClick={(event) => this.handleLogout()}>
                                     <span>
-                                        <Icon type="logout" />
+                                        <Icon type="logout" style={{ padding: 8, fontSize: '25px', color: '#17212b' }} />
                                         <span>Logout</span>
                                     </span>
                                 </Menu.Item>
