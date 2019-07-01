@@ -8,13 +8,15 @@
     /* margin: auto;  */
 
     /* width: 100vh */
+    height: 30%;
 }
 .layout{
     /* width: 100vh */
+    /* height: 300px; */
     
 }
 .aside{
-    widows: 400px;;
+    widows: 500px;
 }
 .app-title{
     color: whitesmoke;
@@ -49,10 +51,10 @@
     margin-bottom: 10px;
     padding: 5px;
     background-color: snow;
-    width: 200px;
-    height: 50px;
+    width: 100px;
+    height: 40px;
     text-align: left;
-    font: 400 .9em 'Open Sans', sans-serif;
+    font: 350 .8em 'Open Sans', sans-serif;
     border: 1px solid snow;
     border-radius: 10px;
 }
@@ -80,7 +82,7 @@
     padding: 10px;
 }
 .chat-back{
-    height: 300px;
+    height: 400px;
 }
 .message-inp{
     position: fixed;
@@ -102,12 +104,14 @@
 
 }
 .chat-panel-title{
-    position: fixed;
+    position: fixed;    
     background-color: #004d99;
     z-index: 1;
 }
 .chat-view{
-    top: 50px;
+    padding-top: 13%;
+    padding-bottom: 13%;
+    height: 300px;
 }
 .message-inp{
     position: fixed;

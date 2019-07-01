@@ -193,6 +193,9 @@ export default class ChatApp extends Component {
     }
     async componentDidMount() {
 
+        // await this.loadCurrentUser();
+        // await this.loadChats();
+                
         try {
             setInterval(async () => {
 
@@ -204,7 +207,7 @@ export default class ChatApp extends Component {
                 }
 
                 console.log('update')
-            }, 3000);
+            }, 4000);
         } catch (e) {
             console.log(e);
         }
@@ -408,7 +411,9 @@ export default class ChatApp extends Component {
                     isLoading: false,
                     userFounded: true
                 });
-                console.log(this.state.searchedUser)
+                console.log('searchUser', this.state.searchedUser)
+                console.log('userFound', this.state.userFounded)
+
             }).catch(error => {
                 this.setState({
                     searchedUser: '',
@@ -468,34 +473,41 @@ export default class ChatApp extends Component {
     }
     showChatInfo() {
 
-        getChatInfo(this.state.curChat.id)
-            .then(response => {
-                this.setState({
-                    curChatInfo: response.data.info
-                })
-
-                if (this.state.curChatInfo.is_private) {
-                    for (let member of this.state.curChatInfo.members) {
-
-                        if (member.id !== this.state.currentUser.id) {
-                            this.checkUserIsBloked(this.state.curChat.id, member.id)
-                            console.log('member_id', member.id, 'member_name', member.name)
-
-                        }
-                    }
-                    this.setState({
-                        privateChatModalVisib: true
-                    })
-                } else {
-                    this.preparePublicModal()
-                }
-            }).catch(error => {
-                console.log(error)
-                notification['error']({
-                    message: 'Chat App',
-                    description: 'server has problem',
-                });
+        if (this.state.curChat == null || this.state.curChat == undefined) {
+            notification['info']({
+                message: 'Chat App',
+                description: 'Select chat first',
             });
+        } else
+
+            getChatInfo(this.state.curChat.id)
+                .then(response => {
+                    this.setState({
+                        curChatInfo: response.data.info
+                    })
+
+                    if (this.state.curChatInfo.is_private) {
+                        for (let member of this.state.curChatInfo.members) {
+
+                            if (member.id !== this.state.currentUser.id) {
+                                this.checkUserIsBloked(this.state.curChat.id, member.id)
+                                console.log('member_id', member.id, 'member_name', member.name)
+
+                            }
+                        }
+                        this.setState({
+                            privateChatModalVisib: true
+                        })
+                    } else {
+                        this.preparePublicModal()
+                    }
+                }).catch(error => {
+                    console.log(error)
+                    notification['error']({
+                        message: 'Chat App',
+                        description: 'server has problem',
+                    });
+                });
     }
     checkUserIsBloked(chatId, userId) {
         checkIsBlock(chatId, userId)
@@ -704,12 +716,14 @@ export default class ChatApp extends Component {
                             />
                         </Sider>
 
-                        <Layout style = {{position:'relative'}}>
+                        <Layout style={{ position: 'relative' }}>
                             <Header style={{ position: "fixed", width: '42.6%', zIndex: 1 }}>
                                 <div>
                                     <center>
-                                        <span>{this.state.selectedChatName}</span>
-                                        <Button type="primary" shape="circle" icon="more"
+                                        <span style={{ color: "white", fontSize: 18 }}>
+                                            {this.state.selectedChatName}
+                                        </span>
+                                        <Button style={{ float: "right", marginTop: 15 }} type="primary" shape="circle" icon="more"
                                             onClick={this.showChatInfo} />
                                     </center>
                                 </div>
@@ -734,8 +748,8 @@ export default class ChatApp extends Component {
                                 </div>
 
                             </Content>
-                            <Footer  style={{ position: 'fixed',bottom:'12%',zIndex: 1 ,width:'42.6%'}}>
-                                <div style={{padding:0,margin:0,}}>
+                            <Footer style={{ position: 'fixed', bottom: '12%', zIndex: 1, width: '42.6%' }}>
+                                <div style={{ padding: 0, margin: 0, }}>
                                     <Search
                                         disabled={this.state.isAllowed ? false : true}
                                         placeholder="message"
@@ -745,7 +759,7 @@ export default class ChatApp extends Component {
                                 </div>
                             </Footer>
                         </Layout>
-                       
+
                         <Sider>
 
                             <div className="profile-pannel">
