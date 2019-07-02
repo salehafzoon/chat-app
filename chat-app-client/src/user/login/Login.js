@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { ACCESS_TOKEN } from '../../constants';
 
 import 'antd/dist/antd.css';
-import { Form, Input, Button, Icon, notification } from 'antd';
+import { Form, Input, Button, Icon, notification, Card } from 'antd';
 
 const FormItem = Form.Item;
 
@@ -37,14 +37,16 @@ class Login extends Component {
     render() {
         const AntWrappedLoginForm = Form.create()(LoginForm)
         return (
-            <div className="login-container">
-
-                <center><h1 className="app-title">Chat App</h1></center>
-                <h2 className="page-title">Login</h2>
-                <div className="login-content">
-                    <AntWrappedLoginForm onLogin={this.handleLogin} />
+            <Card>
+                <div className="login-container">
+                    <center><h1 className="app-title">Chat App</h1></center>
+                    <h2 className="page-title">Login</h2>
+                    <div className="login-content">
+                        <AntWrappedLoginForm onLogin={this.handleLogin} />
+                    </div>
                 </div>
-            </div>
+            </Card>
+
         );
     }
 }
@@ -72,7 +74,7 @@ class LoginForm extends Component {
                 login(loginRequest)
                     .then(response => {
                         localStorage.setItem(ACCESS_TOKEN, response.data.access_token);
-                        
+
                         this.setState({
                             disabledBtn: false
                         });

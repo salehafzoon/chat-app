@@ -10,6 +10,7 @@ import './ChatApp.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { ACCESS_TOKEN } from '../constants';
 import { COLORS } from '../constants'
+import { ReactIndexedDB } from 'react-indexed-db';
 
 const { Header, Footer, Sider, Content } = Layout;
 const { SubMenu } = Menu;
@@ -21,8 +22,12 @@ const { SHOW_PARENT } = TreeSelect;
 
 export default class ChatApp extends Component {
     constructor(props) {
+
         super(props);
+
+
         this.state = {
+            db: null,
             currentUser: null,
             isAuthenticated: true,
             isLoading: false,
@@ -54,6 +59,22 @@ export default class ChatApp extends Component {
             newMembers: []
 
         }
+
+        this.db = new ReactIndexedDB('ChatAppDB', 1);
+
+
+        this.db.openDatabase(1, evt => {
+
+            console.log('creating tables')
+
+            let objectStore = evt.currentTarget.result.createObjectStore('chats', { keyPath: 'id', autoIncrement: false });
+
+            objectStore.createIndex('name', 'name', { unique: false });
+            objectStore.createIndex('is_private', 'is_private', { unique: false });
+            objectStore.createIndex('is_channel', 'is_channel', { unique: false });
+            objectStore.createIndex('messeges', 'messeges', { unique: false });
+
+        });
 
         this.loadCurrentUser = this.loadCurrentUser.bind(this);
         this.loadChats = this.loadChats.bind(this);
@@ -193,24 +214,55 @@ export default class ChatApp extends Component {
     }
     async componentDidMount() {
 
-        // await this.loadCurrentUser();
-        // await this.loadChats();
-                
+        // this.db.openDatabase(1, evt => {
+        //     console.log('db opend')
+        //     this.db.add('chats', {
+        //         name: 'chat1', is_private: true,
+        //         is_channel: false,
+        //         messeges: [
+        //             {
+        //                 "id": 6,
+        //                 "content": "salam",
+        //                 "sender_id": 1,
+        //                 "send_date": "2019-07-01 14:31:26",
+        //                 "created_at": "2019-07-01 10:01:26",
+        //                 "updated_at": "2019-07-01 10:01:26",
+        //                 "chat_id": 4
+        //             },
+        //         ]
+        //     }).then(
+        //         () => {
+        //             console.log('adding chat to db');
+        //         },
+        //         error => {
+        //             console.log(error);
+        //         }
+        //     );
+        // });
+
+
+        // this.db.getAll('chats').then(
+        //     chats => {
+        //         console.log('db chats:',chats)
+        //     });
+
         try {
             setInterval(async () => {
+
+                //load datas from indexDb
 
                 await this.loadCurrentUser();
                 await this.loadChats();
                 if (this.state.curChat != null) {
-                    console.log(this.state.curChat)
                     await this.loadChatMessages(this.state.curChat)
                 }
 
                 console.log('update')
-            }, 4000);
+            }, 3000);
         } catch (e) {
             console.log(e);
         }
+
     }
     handleNewChatOk = () => {
 
@@ -688,7 +740,7 @@ export default class ChatApp extends Component {
         return (
             <div className="container">
                 <Layout className="content">
-                    <Header className="app-title"><h2 style={{color:'white'}}>Chat App</h2></Header>
+                    <Header className="app-title"><h2 style={{ color: 'white' }}>Chat App</h2></Header>
                     <Layout className='layout'>
 
                         <Sider
@@ -717,7 +769,7 @@ export default class ChatApp extends Component {
                         </Sider>
 
                         <Layout style={{ position: 'relative' }}>
-                            <Header style={{ backgroundColor:'#17212b',position: "fixed", width: '42.6%', zIndex: 1 }}>
+                            <Header style={{ backgroundColor: '#17212b', position: "fixed", width: '42.6%', zIndex: 1 }}>
                                 <div>
                                     <center>
                                         <span style={{ color: "white", fontSize: 18 }}>
@@ -737,7 +789,7 @@ export default class ChatApp extends Component {
                                         dataSource={this.state.messages}
                                         renderItem={item => (
                                             <List.Item
-                                                className={item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
+                                                className={this.state.currentUser !== undefined && item.sender_id === this.state.currentUser.id ? 'own-mess' : 'other-mess'}
                                             >
                                                 <List.Item.Meta
                                                     title={<span>{item.content}</span>}
@@ -829,14 +881,16 @@ export default class ChatApp extends Component {
                         confirmLoading={this.state.confirmLoading}
                     >
 
-                        <Search placeholder="user phone number" onSearch={value => this.searchingUser(value)} enterButton />
+                        <Search
+                            placeholder="user phone number" onSearch={value => this.searchingUser(value)} enterButton />
                         <center>
                             <Avatar
                                 visibility={this.state.userFounded ? "visible" : "hidden"}
-                                size={45} style={{ verticalAlign: 'middle', alignSelf: 'center' }}>
+                                size={45} style={{ marginTop: 20, verticalAlign: 'middle', alignSelf: 'center' }}>
                                 <h2>{this.state.searchedUser.name !== undefined ? this.state.searchedUser.name[0] : ""}</h2>
                             </Avatar>
-                            <span>{this.state.searchedUser.name !== undefined ? this.state.searchedUser.name : ''}</span>
+
+                            <h4 style={{ paddingTop: 10 }}>{this.state.searchedUser.name !== undefined ? this.state.searchedUser.name : ''}</h4>
 
                         </center>
 
@@ -851,14 +905,15 @@ export default class ChatApp extends Component {
                     >
                         <div>
                             <center><h2>{this.state.newChatModalTitle}</h2></center>
-                            <Input value={this.state.newChatName} onChange={this.updateChatName}
+                            <Input
+                                value={this.state.newChatName} onChange={this.updateChatName}
                                 placeholder='Chat Name' />
 
                             <center><h4>{'Select contact'}</h4></center>
 
                             <Select
                                 mode="multiple"
-                                style={{ width: '60%' }}
+                                style={{ width: '60%', marginTop: 20 }}
                                 placeholder="select Contact to add"
                                 onChange={this.handleSelectContactChange}
                             >
@@ -881,7 +936,8 @@ export default class ChatApp extends Component {
                                 </Avatar>
                                 <h2>{this.state.curChatInfo != null ? this.state.curChatInfo.name : ''}</h2>
 
-                                <Button type={this.state.isUserBlocked === true ? "primary" : "danger"} block
+                                <Button style={{ marginTop: 20 }}
+                                    type={this.state.isUserBlocked === true ? "primary" : "danger"} block
                                     onClick={this.blockOrUnblockUser}>
                                     {this.state.isUserBlocked === true ? "Unblock User" : "Block User"}
                                 </Button>
@@ -904,7 +960,7 @@ export default class ChatApp extends Component {
                                 <h4>{'Select contact'}</h4>
                                 <Select
                                     mode="single"
-                                    style={{ width: '60%' }}
+                                    style={{ width: '60%', margin: 20 }}
                                     placeholder="select Contact"
                                     onChange={this.handleSelectContactChange}
                                 >
@@ -927,18 +983,20 @@ export default class ChatApp extends Component {
                                 <h2>{this.state.curChatInfo != null ? this.state.curChatInfo.name : ''}</h2>
                                 <h4>Members</h4>
 
-                                <TreeSelect {...this.state.treeProps} />
+                                <TreeSelect
+                                    disabled={!this.state.isAdmin}
+                                    {...this.state.treeProps} />
 
                                 <Button
                                     disabled={!this.state.isAdmin}
-                                    style={{ width: '60%' }} type="primary" block
+                                    style={{ width: '60%', marginTop: 20 }} type="primary" block
                                     onClick={this.updateChatMembers}>
                                     Update Members
                             </Button>
 
                                 <Button
                                     disabled={!this.state.isAdmin}
-                                    style={{ width: '60%' }} type="danger" block
+                                    style={{ width: '60%', marginTop: 20 }} type="danger" block
                                     onClick={this.deleteChat}>
                                     Delete Chat
                             </Button>
