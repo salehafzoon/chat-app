@@ -124,6 +124,7 @@ class ChatController extends Controller
     public function uppdateMember(Request $request)
     {
 
+
         $chat = Chat::find($request->input('chat_id'));
 
         if (is_null($chat)) {
@@ -132,21 +133,19 @@ class ChatController extends Controller
             ], 200);
         }
 
-        // $chat->members()->delete();
-
         DB::table('chat_user')->where('chat_id', $request->input('chat_id'))
             ->where('permission', '!=', 'ADMIN')->delete();
 
 
         foreach ($request->input('members') as $memberId) {
-            $user = User::find($memberId);
-            if (is_null($user))
+            $member = User::find($memberId);
+            if (is_null($member))
                 return response()
                     ->json([
                         'message' => 'user not found'
                     ], 200);
 
-            $chat->members()->save($user);
+            $chat->members()->save($member);
         }
 
         return response()

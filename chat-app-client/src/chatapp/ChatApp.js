@@ -56,7 +56,8 @@ export default class ChatApp extends Component {
             newConvModalVisib: false,
             newConvName: null,
             treeProps: {},
-            newMembers: []
+            newMembers: [],
+            sendingMess:'',
 
         }
 
@@ -115,6 +116,9 @@ export default class ChatApp extends Component {
         this.checkUserIsAdmin = this.checkUserIsAdmin.bind(this);
         this.deleteChat = this.deleteChat.bind(this);
 
+        this.updateSendMess = this.updateSendMess.bind(this);
+
+        
         notification.config({
             placement: 'topRight',
             top: 70,
@@ -246,22 +250,25 @@ export default class ChatApp extends Component {
         //         console.log('db chats:',chats)
         //     });
 
-        try {
-            setInterval(async () => {
 
-                //load datas from indexDb
+        await this.loadCurrentUser();
+        await this.loadChats();
+        // try {
+        //     setInterval(async () => {
 
-                await this.loadCurrentUser();
-                await this.loadChats();
-                if (this.state.curChat != null) {
-                    await this.loadChatMessages(this.state.curChat)
-                }
+        //         //load datas from indexDb
 
-                console.log('update')
-            }, 3000);
-        } catch (e) {
-            console.log(e);
-        }
+        //         await this.loadCurrentUser();
+        //         await this.loadChats();
+        //         if (this.state.curChat != null) {
+        //             await this.loadChatMessages(this.state.curChat)
+        //         }
+
+        //         console.log('update')
+        //     }, 3000);
+        // } catch (e) {
+        //     console.log(e);
+        // }
 
     }
     handleNewChatOk = () => {
@@ -411,15 +418,19 @@ export default class ChatApp extends Component {
                 let treeData = []
 
                 for (let member of this.state.curChatInfo.members) {
-                    values.push(member.id)
+                    if (member.id !== this.state.currentUser.id)
+                        values.push(member.id)
+
                 }
 
+
                 for (let contact of this.state.contacts) {
-                    treeData.push({
-                        title: contact.name,
-                        value: contact.id,
-                        key: contact.id
-                    })
+                    if (contact.id !== this.state.currentUser.id)
+                        treeData.push({
+                            title: contact.name,
+                            value: contact.id,
+                            key: contact.id
+                        })
                 }
 
                 // console.log(values)
@@ -510,7 +521,7 @@ export default class ChatApp extends Component {
     sendMessage(message) {
 
         console.log(message, this.state.curChat.id)
-
+        
         sendMessageApi(this.state.curChat.id, message)
             .then(response => {
                 this.loadChatMessages(this.state.curChat)
@@ -684,7 +695,7 @@ export default class ChatApp extends Component {
 
     updateChatMembers() {
 
-        console.log(this.state.curChatInfo.id,
+        console.log('new members:', this.state.curChatInfo.id,
             this.state.newMembers)
 
         uppdateChatMembers(this.state.curChatInfo.id,
@@ -726,6 +737,13 @@ export default class ChatApp extends Component {
             });
 
     }
+    updateSendMess(message){
+        this.setState({
+            sendMessage:message
+        })
+        console.log(this.state.sendingMess)
+    }
+    
     render() {
         var name = '';
         var phone = '';
@@ -803,6 +821,8 @@ export default class ChatApp extends Component {
                             <Footer style={{ position: 'fixed', bottom: '12%', zIndex: 1, width: '42.6%' }}>
                                 <div style={{ padding: 0, margin: 0, }}>
                                     <Search
+                                        // value={this.state.sendingMess}
+                                        onChange={value => this.updateSendMess(value)}
                                         disabled={this.state.isAllowed ? false : true}
                                         placeholder="message"
                                         enterButton="send"
