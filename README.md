@@ -16,3 +16,19 @@ Just clone the repository use Git:
 ```bash
 git clone https://github.com/salehafzoon/chat-app.git
 ```
+
+## Visuals
+
+
+## Potential Improvment
+- encrypt users data
+- add user online status 
+- add file upload suport
+
+## Contributing
+
+Pull requests are welcome. npm run test and npm run lint before push.
+
+## Project Status
+
+development has stopped for now.
