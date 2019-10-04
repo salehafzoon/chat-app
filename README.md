@@ -27,7 +27,7 @@ git clone https://github.com/salehafzoon/chat-app.git
 
 ## Contributing
 
-Pull requests are welcome. npm run test and npm run lint before push.
+Pull requests are welcome. ```npm run test``` and ```npm run lint``` before push.
 
 ## Project Status
 
